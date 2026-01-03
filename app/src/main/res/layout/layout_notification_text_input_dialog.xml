@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    >
+
+    <!-- I never said this would look good lmao -->
+
+    <EditText
+        android:id="@+id/action_text_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:hint="action input"
+        android:autofillHints=""
+        android:inputType="text"
+        />
+
+    <ImageButton
+        android:id="@+id/action_submit_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:contentDescription="submit"
+        android:src="@android:drawable/ic_menu_send"
+        />
+
+</LinearLayout>

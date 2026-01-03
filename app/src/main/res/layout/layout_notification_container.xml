@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="1dp"
+    android:layout_marginBottom="1dp"
+    android:orientation="vertical"
+    >
+
+    <FrameLayout
+        android:id="@+id/notification_frame"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/notification_background"
+        tools:layout_height="76dp"
+        />
+
+    <TextView
+        android:id="@+id/notification_debug_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#69420420"
+        android:visibility="gone"
+        tools:visibility="visible"
+        tools:text="debug text goes here\nit may have multiple lines"
+        />
+
+</LinearLayout>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:drawablePadding="16dp"
+        android:gravity="center_vertical"
+        android:text="@string/app_name"
+        app:drawableStartCompat="@mipmap/ic_launcher_round"
+        style="@style/TextAppearance.Material3.TitleLarge"
+        />
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/wifi_connect_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="wifi connect" />
+
+            <Button
+                android:id="@+id/notification_panel_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="notification panel" />
+
+            <Button
+                android:id="@+id/settings_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="app settings" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/android_settings_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="android settings" />
+
+            <Button
+                android:id="@+id/accessibility_settings_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="accessibility settings" />
+
+            <Button
+                android:id="@+id/notification_listener_settings_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="notif listener settings" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</LinearLayout>
