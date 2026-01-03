@@ -4,9 +4,10 @@ import static android.Manifest.permission.ACCESS_BACKGROUND_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 import static androidx.core.app.ActivityCompat.requestPermissions;
-import static androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale;
 import static androidx.core.content.ContextCompat.checkSelfPermission;
 import static androidx.core.content.ContextCompat.getSystemService;
+
+import static io.benwiegand.attitude.util.PackageUtil.openAppSettings;
 
 import android.Manifest;
 import android.app.Activity;
@@ -84,46 +85,50 @@ public class WiFiUtil {
         return ssids;
     }
 
-    public static boolean ensureBackgroundLocationPermission(Context c) {
-        if (checkSelfPermission(c, ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED) return true;
-
-        if (c instanceof Activity a) {
-            if (shouldShowRequestPermissionRationale(a, ACCESS_BACKGROUND_LOCATION)) {
-                new AlertDialog.Builder(a)
-                        .setTitle("need background location for wifi auto-connect")
-                        .setMessage("Location is never actually derived, it's just a WifiManager API requirement.\n\nYou may need to go to settings to explicitly grant background location access. Without this, wifi auto-connect won't work on boot.")
-                        .setPositiveButton("K", (d, i) -> {
-                            requestPermissions(a, new String[]{ACCESS_BACKGROUND_LOCATION}, 0);
-
-                        })
-                        .setNegativeButton("no", null)
-                        .show();
-            } else {
-                requestPermissions(a, new String[]{ACCESS_BACKGROUND_LOCATION}, 0);
-            }
-        }
-        return false;
-    }
 
     public static boolean getRuntimeLocationPermission(Context c) {
-        if (checkSelfPermission(c, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) return true;
+        return checkSelfPermission(c, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public static void requestRuntimeLocationPermission(Context c) {
+        // always show rationale since it's a potentially confusing requirement
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(c)
+                .setTitle("Location permission")
+                .setMessage("The location permission is required to retrieve and connect to saved wifi networks.\n\nYour geographical location is never derived.")
+                .setNeutralButton("open settings", (d, i) ->
+                        openAppSettings(c))
+                .setNegativeButton("cancel", null);
 
         if (c instanceof Activity a) {
-            if (shouldShowRequestPermissionRationale(a, ACCESS_FINE_LOCATION)) {
-                new AlertDialog.Builder(a)
-                        .setTitle("need location for wifi connect")
-                        .setMessage("Location is never actually derived, it's just a WifiManager API requirement")
-                        .setPositiveButton("K", (d, i) -> {
-                            requestPermissions(a, new String[]{ACCESS_FINE_LOCATION}, 0);
-
-                        })
-                        .setNegativeButton("no", null)
-                        .show();
-            } else {
-                requestPermissions(a, new String[]{ACCESS_FINE_LOCATION}, 0);
-            }
+            dialogBuilder.setPositiveButton("request", (d, i) ->
+                    requestPermissions(a, new String[]{ACCESS_FINE_LOCATION}, 0));
+        } else {
+            Log.w(TAG, "can't directly request permission!");
         }
-        return false;
+
+        dialogBuilder.show();
+    }
+
+    public static boolean getBackgroundLocationPermission(Context c) {
+        return checkSelfPermission(c, ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public static void requestBackgroundLocationPermission(Context c) {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(c)
+                .setTitle("Background location permission")
+                .setMessage("In order to automatically connect to wifi from the background (on boot, on wake, etc.) you need to set location access to \"Allow all the time\". You will need to go to settings to explicitly grant this.\n\nYour geographical location is never derived.")
+                .setNeutralButton("open settings", (d, i) ->
+                        openAppSettings(c))
+                .setNegativeButton("not now", null);
+
+        if (c instanceof Activity a) {
+            dialogBuilder.setPositiveButton("request", (d, i) ->
+                    requestPermissions(a, new String[]{ACCESS_BACKGROUND_LOCATION}, 0));
+        } else {
+            Log.w(TAG, "can't directly request permission!");
+        }
+
+        dialogBuilder.show();
     }
 
 }

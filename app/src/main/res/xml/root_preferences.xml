@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        app:title="Wifi auto-connect">
+
+        <SwitchPreferenceCompat
+            app:key="wifi_connect_on_boot"
+            app:title="Connect to wifi on boot"
+            app:defaultValue="false"
+            />
+
+        <!-- TODO: not supported yet -->
+        <SwitchPreferenceCompat
+            app:key="wifi_connect_on_wake"
+            app:title="Connect to wifi when waking from sleep"
+            app:dependency="wifi_connect_on_boot"
+            app:defaultValue="true"
+            app:isPreferenceVisible="false"
+            />
+
+        <io.benwiegand.attitude.preference.WifiNetworkPreference
+            app:key="wifi_name"
+            app:title="Select wifi network"
+            app:dependency="wifi_connect_on_boot"
+            />
+
+    </PreferenceCategory>
+</PreferenceScreen>

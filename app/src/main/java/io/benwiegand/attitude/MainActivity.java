@@ -1,11 +1,12 @@
 package io.benwiegand.attitude;
 
-import static io.benwiegand.attitude.util.UiUtil.showWarning;
 import static io.benwiegand.attitude.util.WiFiUtil.connectToWifi;
-import static io.benwiegand.attitude.util.WiFiUtil.ensureBackgroundLocationPermission;
+import static io.benwiegand.attitude.util.WiFiUtil.getBackgroundLocationPermission;
 import static io.benwiegand.attitude.util.WiFiUtil.getRuntimeLocationPermission;
 import static io.benwiegand.attitude.util.UiUtil.showError;
 import static io.benwiegand.attitude.util.UiUtil.showToast;
+import static io.benwiegand.attitude.util.WiFiUtil.requestBackgroundLocationPermission;
+import static io.benwiegand.attitude.util.WiFiUtil.requestRuntimeLocationPermission;
 
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
@@ -62,8 +63,6 @@ public class MainActivity extends AppCompatActivity {
                         createSettingsActionIntent(Settings.ACTION_NOTIFICATION_LISTENER_DETAIL_SETTINGS)
                                 .putExtra(Settings.EXTRA_NOTIFICATION_LISTENER_COMPONENT_NAME, new ComponentName(this, MuhNotificationService.class).flattenToShortString())));
 
-        if (prefMan.hasKey(PrefMan.KEY_WIFI_NAME)) wifiAutoConnect();
-
 
     }
 
@@ -102,16 +101,15 @@ public class MainActivity extends AppCompatActivity {
 
             if (!getRuntimeLocationPermission(this)) {
                 Log.e(TAG, "failed to get runtime location permission");
-                showError(this, "wifi auto-connect failure", "failed to get runtime location permission");
+                requestRuntimeLocationPermission(this);
             } else if (!connectToWifi(this, targetSSID)) {
-                showError(this, "wifi auto-connect failure", "connection result = false");
+                showError(this, "wifi auto-connect failure", "connection result = false\n\nis wifi enabled?");
             } else {
                 showToast(this, "wifi auto-connect success!");
             }
 
-            if (!ensureBackgroundLocationPermission(this)) {
-                showWarning(this, "background location access", "without background location access, wifi auto-connect won't work automatically on boot");
-            }
+            if (!getBackgroundLocationPermission(this))
+                requestBackgroundLocationPermission(this);
 
         } catch (Throwable t) {
             Log.e(TAG, "wifi auto-connect failure", t);

@@ -9,8 +9,10 @@ import java.util.Set;
 public class PrefMan {
     private static final String TAG = PrefMan.class.getSimpleName();
 
-    private static final String PREF_FILE = "io.benwiegand.attitude.opts";
+    private static final String PREF_FILE = "io.benwiegand.attitude_preferences";
 
+    public static final String KEY_WIFI_CONNECT_ON_BOOT = "wifi_connect_on_boot";
+    public static final String KEY_WIFI_CONNECT_ON_WAKE = "wifi_connect_on_wake";
     public static final String KEY_WIFI_NAME = "wifi_name";
 
     private final Context context;

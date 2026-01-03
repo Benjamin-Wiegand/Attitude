@@ -22,7 +22,30 @@ public class BootReceiver extends BroadcastReceiver {
             "android.intent.action.QUICKBOOT_POWERON"
     );
 
-    @SuppressLint("MissingPermission")  // it does actually check, idk what the linter is smoking
+
+    @SuppressLint("MissingPermission")  // it does actually check
+    private void wifiAutoConnect(Context context, PrefMan prefMan) {
+        Log.v(TAG, "performing wifi auto-connect");
+
+        String targetSSID = prefMan.read(String.class, PrefMan.KEY_WIFI_NAME, null);
+        if (targetSSID == null) {
+            Log.e(TAG, "no configured wifi network");
+            return;
+        }
+
+        try {
+            if (!getRuntimeLocationPermission(context)) {
+                Log.e(TAG, "failed to get runtime location permission");
+            } else if (!connectToWifi(context, targetSSID)) {
+                Log.e(TAG, "wifi connection result = false");
+            } else {
+                Log.v(TAG, "wifi connecting!");
+            }
+        } catch (Throwable t) {
+            Log.e(TAG, "Wifi auto-connect failed", t);
+        }
+    }
+
     @Override
     public void onReceive(Context context, Intent intent) {
 
@@ -33,24 +56,8 @@ public class BootReceiver extends BroadcastReceiver {
         Log.d(TAG, "Boot received!!!!");
         PrefMan prefMan = new PrefMan(context);
 
-        // wifi auto-connect
-        String targetSSID = prefMan.read(String.class, PrefMan.KEY_WIFI_NAME, null);
-        try {
-            if (targetSSID != null) {
-                Log.v(TAG, "performing wifi auto-connect");
-                if (!getRuntimeLocationPermission(context)) {
-                    Log.e(TAG, "failed to get runtime location permission");
-                } else if (!connectToWifi(context, targetSSID)) {
-                    Log.e(TAG, "wifi connection result = false");
-                } else {
-                    Log.v(TAG, "wifi connecting!");
-                }
-            } else {
-                Log.d(TAG, "no wifi SSID configured");
-            }
-        } catch (Throwable t) {
-            Log.e(TAG, "Wifi auto-connect failed", t);
-        }
+        if (prefMan.read(Boolean.class, PrefMan.KEY_WIFI_CONNECT_ON_BOOT, false))
+            wifiAutoConnect(context, prefMan);
 
     }
 }
