@@ -102,8 +102,10 @@ public class MainActivity extends AppCompatActivity {
             if (!getRuntimeLocationPermission(this)) {
                 Log.e(TAG, "failed to get runtime location permission");
                 requestRuntimeLocationPermission(this);
+                return;
             } else if (!connectToWifi(this, targetSSID)) {
                 showError(this, "wifi auto-connect failure", "connection result = false\n\nis wifi enabled?");
+                return;
             } else {
                 showToast(this, "wifi auto-connect success!");
             }
