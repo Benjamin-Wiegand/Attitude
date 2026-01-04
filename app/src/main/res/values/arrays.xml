@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <array name="remap_target_values">
+        <item />
+        <item>wifi_connect</item>
+        <item>notification_drawer</item>
+        <item>attitude</item>
+        <item>lightning_launcher</item>
+    </array>
+
+    <array name="remap_target_names">
+        <item>disabled</item>
+        <item>connect to wifi</item>
+        <item>improved notification drawer</item>
+        <item>open Attitude</item>
+        <item>open Lightning Launcher</item>
+    </array>
+</resources>

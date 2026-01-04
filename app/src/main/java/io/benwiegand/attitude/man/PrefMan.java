@@ -11,9 +11,28 @@ public class PrefMan {
 
     private static final String PREF_FILE = "io.benwiegand.attitude_preferences";
 
+    // wifi connection settings
     public static final String KEY_WIFI_CONNECT_ON_BOOT = "wifi_connect_on_boot";
     public static final String KEY_WIFI_CONNECT_ON_WAKE = "wifi_connect_on_wake";
     public static final String KEY_WIFI_NAME = "wifi_name";
+
+    // pop-up settings
+    public static final String KEY_BLOCK_POPUP_HORIZON_FEED = "block_popup_horizon_feed";
+    public static final String KEY_BLOCK_POPUP_PASSTHROUGH = "block_popup_passthrough";
+
+    // remap settings
+    public static final String KEY_REMAP_GLOBAL_ENABLE = "remap_global_enable";
+    public static final String KEY_REMAP_APP_DRAWER_WINDOW = "remap_app_drawer_window";
+    public static final String KEY_REMAP_APP_DRAWER_DRAG = "remap_app_drawer_drag";
+    public static final String KEY_REMAP_NOTIFICATION_WINDOW = "remap_notification_window";
+    public static final String KEY_REMAP_PROFILE_BUTTON = "remap_profile_click";
+
+    // remap values
+    public static final String REMAP_TARGET_NOTIFICATION_DRAWER = "notification_drawer";
+    public static final String REMAP_TARGET_WIFI_CONNECT = "wifi_connect";
+    public static final String REMAP_TARGET_ATTITUDE = "attitude";
+    public static final String REMAP_TARGET_LIGHTNING_LAUNCHER = "lightning_launcher";
+
 
     private final Context context;
     private SharedPreferences prefs = null;

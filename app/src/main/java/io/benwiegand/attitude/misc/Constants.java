@@ -4,6 +4,8 @@ import android.content.ComponentName;
 
 import java.util.Set;
 
+// constants for remapping and popup blocking
+// TODO: probably refactor to UiConstants or something
 public class Constants {
 
     // seems to do the annoying popups. ironic for "ux"
@@ -18,25 +20,25 @@ public class Constants {
 
     // for remapping things
     public static final String SYSTEMUX_DRAGGABLE_WINDOW_TITLE = "com.oculus.android_panel_app.AndroidPanelLayer-com.oculus.systemux-draggable";
-    public static final String SYSTEMUX_LIBRARY_ICON_ID = "com.oculus.systemux:id/library_background";
+    public static final String SYSTEMUX_DRAGGABLE_BUTTON_ICON_ID = "com.oculus.systemux:id/button_icon";
+    public static final String SYSTEMUX_LIBRARY_BACKGROUND_ID = "com.oculus.systemux:id/library_background";
     public static final String SYSTEMUX_PROFILE_BUTTON_ID = "com.oculus.systemux:id/profile_button_hit_target";
+    public static final String APP_DRAWER_WINDOW_TITLE = "Library";
+    public static final String NOTIFICATION_WINDOW_TITLE = "Notifications";
 
 
     // title-bar component for systemux windows
     public static final ComponentName VRSHELL_PRESENTATION_COMPONENT = new ComponentName(VRSHELL_PKG, "android.app.Presentation");
 
-    // title-bar popup identification
-    // I'm aware that this isn't perfect (namely, doesn't work for different languages, and might close similarly-titled windows)
-    // TODO: it might be possible to fix the language problem by leveraging resource IDs
-    public static final Set<String> VRSHELL_POPUP_WINDOW_TITLES = Set.of(
-            "Passthrough",          // annoying "add an avatar mirror" popup
-            "Horizon Feed"          // pops up on boot
-    );
-
     // elements of title bar
     public static final String VRSHELL_CLOSE_BUTTON_ID = "com.oculus.vrshell:id/close_button";
     public static final String VRSHELL_WINDOW_TITLE_ID = "com.oculus.vrshell:id/app_display_name";
 
+    // popup window titles
+    // I'm aware that this isn't perfect (namely, doesn't work for different languages, and might close similarly-titled windows)
+    // TODO: it might be possible to fix the language problem by leveraging resource IDs
+    public static final String PASSTHROUGH_WINDOW_TITLE = "Passthrough";    // annoying "add an avatar mirror" popup
+    public static final String HORIZON_FEED_WINDOW_TITLE = "Horizon Feed";  // pops up on boot
 
     // third-party integrations
     public static final ComponentName LIGHTNING_LAUNCHER_COMPONENT = new ComponentName("com.threethan.launcher", "com.threethan.LightningLauncher");

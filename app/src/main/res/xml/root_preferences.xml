@@ -27,4 +27,72 @@
             />
 
     </PreferenceCategory>
+
+    <PreferenceCategory
+        app:title="Pop-up blocking">
+
+        <SwitchPreferenceCompat
+            app:key="block_popup_horizon_feed"
+            app:title="Block &quot;Horizon Feed&quot;"
+            app:defaultValue="true"
+            />
+
+        <SwitchPreferenceCompat
+            app:key="block_popup_passthrough"
+            app:title="Block &quot;Passthrough&quot; virtual item suggestion"
+            app:defaultValue="true"
+            />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:title="UI remapping">
+
+        <SwitchPreferenceCompat
+            app:key="remap_global_enable"
+            app:title="Enable remapping"
+            app:defaultValue="true"
+            />
+
+        <ListPreference
+            app:key="remap_app_drawer_window"
+            app:title="Remap app drawer"
+            app:entries="@array/remap_target_names"
+            app:entryValues="@array/remap_target_values"
+            app:useSimpleSummaryProvider="true"
+            app:dependency="remap_global_enable"
+            app:defaultValue="lightning_launcher"
+            />
+
+        <ListPreference
+            app:key="remap_app_drawer_drag"
+            app:title="Remap app drawer long press"
+            app:entries="@array/remap_target_names"
+            app:entryValues="@array/remap_target_values"
+            app:useSimpleSummaryProvider="true"
+            app:dependency="remap_global_enable"
+            app:defaultValue="lightning_launcher"
+            />
+
+        <ListPreference
+            app:key="remap_notification_window"
+            app:title="Remap native notification window"
+            app:entries="@array/remap_target_names"
+            app:entryValues="@array/remap_target_values"
+            app:useSimpleSummaryProvider="true"
+            app:dependency="remap_global_enable"
+            app:defaultValue="notification_drawer"
+            />
+
+        <ListPreference
+            app:key="remap_profile_click"
+            app:title="Remap profile button"
+            app:entries="@array/remap_target_names"
+            app:entryValues="@array/remap_target_values"
+            app:useSimpleSummaryProvider="true"
+            app:dependency="remap_global_enable"
+            />
+
+    </PreferenceCategory>
+
 </PreferenceScreen>
