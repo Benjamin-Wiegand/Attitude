@@ -3,14 +3,12 @@ package io.benwiegand.attitude.util;
 import static android.Manifest.permission.ACCESS_BACKGROUND_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
-import static androidx.core.app.ActivityCompat.requestPermissions;
 import static androidx.core.content.ContextCompat.checkSelfPermission;
 import static androidx.core.content.ContextCompat.getSystemService;
 
 import static io.benwiegand.attitude.util.PackageUtil.openAppSettings;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.wifi.WifiConfiguration;
@@ -95,16 +93,9 @@ public class WiFiUtil {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(c)
                 .setTitle("Location permission")
                 .setMessage("The location permission is required to retrieve and connect to saved wifi networks.\n\nYour geographical location is never derived.")
-                .setNeutralButton("open settings", (d, i) ->
+                .setPositiveButton("open settings", (d, i) ->
                         openAppSettings(c))
                 .setNegativeButton("cancel", null);
-
-        if (c instanceof Activity a) {
-            dialogBuilder.setPositiveButton("request", (d, i) ->
-                    requestPermissions(a, new String[]{ACCESS_FINE_LOCATION}, 0));
-        } else {
-            Log.w(TAG, "can't directly request permission!");
-        }
 
         dialogBuilder.show();
     }
@@ -116,17 +107,10 @@ public class WiFiUtil {
     public static void requestBackgroundLocationPermission(Context c) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(c)
                 .setTitle("Background location permission")
-                .setMessage("In order to automatically connect to wifi from the background (on boot, on wake, etc.) you need to set location access to \"Allow all the time\". You will need to go to settings to explicitly grant this.\n\nYour geographical location is never derived.")
-                .setNeutralButton("open settings", (d, i) ->
+                .setMessage("In order to automatically connect to wifi from the background (on boot, on wake, etc.) you need to set location access to \"Allow all the time\".\n\nYour geographical location is never derived.")
+                .setPositiveButton("open settings", (d, i) ->
                         openAppSettings(c))
                 .setNegativeButton("not now", null);
-
-        if (c instanceof Activity a) {
-            dialogBuilder.setPositiveButton("request", (d, i) ->
-                    requestPermissions(a, new String[]{ACCESS_BACKGROUND_LOCATION}, 0));
-        } else {
-            Log.w(TAG, "can't directly request permission!");
-        }
 
         dialogBuilder.show();
     }
