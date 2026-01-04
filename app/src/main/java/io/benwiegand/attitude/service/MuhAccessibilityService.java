@@ -34,7 +34,7 @@ import io.benwiegand.attitude.util.PackageUtil;
 @SuppressLint("AccessibilityPolicy")    // cool story bro
 public class MuhAccessibilityService extends AccessibilityService implements MakeshiftBindCallback {
     private static final String TAG = MuhAccessibilityService.class.getSimpleName();
-    private static final boolean LOG_DEBUG = true;
+    private static final boolean LOG_DEBUG = false;
 
     private final ServiceBinder binder = new ServiceBinder();
     private MakeshiftBind makeshiftBind = null;
