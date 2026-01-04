@@ -11,8 +11,8 @@ android {
         minSdk = 28
         //noinspection ExpiredTargetSdkVersion: SDK 29 breaks WifiManager
         targetSdk = 28
-        versionCode = 1
-        versionName = "0.0.1"
+        versionCode = 2
+        versionName = "0.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
