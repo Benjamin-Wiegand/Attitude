@@ -29,6 +29,7 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+        app:key="block_popup_category"
         app:title="Pop-up blocking">
 
         <SwitchPreferenceCompat
@@ -46,6 +47,7 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+        app:key="remap_category"
         app:title="UI remapping">
 
         <SwitchPreferenceCompat
