@@ -1,9 +1,15 @@
 package io.benwiegand.attitude.service;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
@@ -15,12 +21,15 @@ import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.interfaces.RSAPrivateKey;
 
+import io.benwiegand.attitude.AdbActivity;
 import io.benwiegand.attitude.adb.AdbConnectionManager;
 import io.benwiegand.attitude.man.KeyMan;
 import io.github.muntashirakon.adb.AdbPairingRequiredException;
 
 public class AdbService extends Service {
     private static final String TAG = AdbService.class.getSimpleName();
+
+    private static final String FOREGROUND_NOTIFICATION_CHANNEL = "adb_foreground";
 
     public enum Status {
         NEED_SETUP,
@@ -65,6 +74,8 @@ public class AdbService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.i(TAG, "adb service created");
+
+        createForegroundNotification();
 
         // many long running operations in init
         connectionThread = new Thread(this::connectionLoop);
@@ -130,6 +141,37 @@ public class AdbService extends Service {
             //todo: restart after a little while
         }
     }
+
+
+    private void createForegroundNotification() {
+        NotificationManager nm = getSystemService(NotificationManager.class);
+        NotificationChannel channel = nm.getNotificationChannel(FOREGROUND_NOTIFICATION_CHANNEL);
+        if (channel == null)
+            nm.createNotificationChannel(new NotificationChannel(FOREGROUND_NOTIFICATION_CHANNEL, "ADB Service Foreground", NotificationManager.IMPORTANCE_LOW));
+
+        Intent intent = new Intent(this, AdbActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        Notification notification = new Notification.Builder(this, FOREGROUND_NOTIFICATION_CHANNEL)
+                .setSmallIcon(android.R.drawable.ic_dialog_info)    // TODO: better icon for this
+                .setOngoing(true)
+                .setContentIntent(pendingIntent)
+                .setContentTitle("ADB Service")
+                .setSubText("service is running")
+                .build();
+
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE); // I mean it's not wrong
+            } else {
+                startForeground(1, notification);
+            }
+        } catch (Throwable t) {
+            Log.e(TAG, "failed to start foreground context", t);
+        }
+    }
+
 
     private void tryEnableWirelessDebugging() {
         ContentResolver cr = getContentResolver();
