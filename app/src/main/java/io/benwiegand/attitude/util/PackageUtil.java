@@ -28,4 +28,11 @@ public class PackageUtil {
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 .setComponent(component), null);
     }
+
+    public static Intent createAndroidSettingsIntent(String action) {
+        return new Intent(action)
+                .setPackage("com.android.settings")
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+    }
 }

@@ -51,6 +51,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="app settings" />
+
+            <Button
+                android:id="@+id/adb_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="adb" />
         </LinearLayout>
 
         <LinearLayout

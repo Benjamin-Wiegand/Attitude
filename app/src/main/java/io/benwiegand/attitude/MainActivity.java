@@ -20,6 +20,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import io.benwiegand.attitude.man.PrefMan;
 import io.benwiegand.attitude.service.MuhNotificationService;
+import io.benwiegand.attitude.util.PackageUtil;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -50,6 +51,10 @@ public class MainActivity extends AppCompatActivity {
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
                     return true;
                 });
+
+        findViewById(R.id.adb_button)
+                .setOnClickListener(v ->
+                        PackageUtil.launchActivity(this, AdbActivity.class));
 
 
         findViewById(R.id.android_settings_button)
