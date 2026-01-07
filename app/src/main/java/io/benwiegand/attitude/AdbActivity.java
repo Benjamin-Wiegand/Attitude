@@ -8,12 +8,15 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -44,6 +47,8 @@ public class AdbActivity extends AppCompatActivity {
     private static final long COMMAND_EXECUTION_TIMEOUT = 5000;
 
     private static final String TEST_COMMAND = "id -u";
+
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     private AdbConnectionManager adbConnectionManager = null;
 
@@ -164,8 +169,14 @@ public class AdbActivity extends AppCompatActivity {
         // especially if something goes wrong
         Log.d(TAG, "status: " + text);
         runOnUiThread(() -> {
-            TextView statusText = findViewById(R.id.adb_status_text);
+            TextView statusText = findViewById(R.id.adb_log_text);
             statusText.setText(statusText.getText() + "\n" + text);
+
+            // scroll down on next loop, after text renders
+            handler.post(() -> {
+                ScrollView adbLogScrollView = findViewById(R.id.adb_log_scrollview);
+                adbLogScrollView.fullScroll(View.FOCUS_DOWN);
+            });
         });
     }
 

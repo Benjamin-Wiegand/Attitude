@@ -80,12 +80,13 @@
 
 
     <ScrollView
-        android:layout_width="wrap_content"
+        android:id="@+id/adb_log_scrollview"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         >
 
         <TextView
-            android:id="@+id/adb_status_text"
+            android:id="@+id/adb_log_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             tools:text="initializing adb"
