@@ -11,6 +11,7 @@ import android.content.pm.ServiceInfo;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.Log;
 
@@ -20,16 +21,26 @@ import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.interfaces.RSAPrivateKey;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.RejectedExecutionException;
 
 import io.benwiegand.attitude.AdbActivity;
 import io.benwiegand.attitude.adb.AdbConnectionManager;
+import io.benwiegand.attitude.adb.QdAdbShell;
+import io.benwiegand.attitude.async.Sec;
+import io.benwiegand.attitude.async.SecAdapter;
 import io.benwiegand.attitude.man.KeyMan;
 import io.github.muntashirakon.adb.AdbPairingRequiredException;
+import io.github.muntashirakon.adb.AdbStream;
 
 public class AdbService extends Service {
     private static final String TAG = AdbService.class.getSimpleName();
 
+    private static final long IDLE_CONNECTION_POLL_INTERVAL = 5000;
+
     private static final String FOREGROUND_NOTIFICATION_CHANNEL = "adb_foreground";
+    private static final String SETTINGS_GLOBAL_WIRELESS_DEBUGGING_KEY = "adb_wifi_enabled";
 
     public enum Status {
         NEED_SETUP,
@@ -48,18 +59,21 @@ public class AdbService extends Service {
 
     }
 
+    private record CommandQueueEntry(String command, long queueExpiration, long executionTimeout, SecAdapter<QdAdbShell.Result> adapter) {}
+
     private final Binder binder = new ServiceBinder();
 
     private Status currentStatus = Status.BUSY;
 
     private AdbConnectionManager adbConnectionManager = null;
-
+    private QdAdbShell qdShell = null;
+    private final Queue<CommandQueueEntry> commandQueue = new ConcurrentLinkedQueue<>();
 
     private boolean wirelessDebuggingForceEnabled = false;
 
 
     private Thread connectionThread;
-    private boolean stayAlive = true;
+    private boolean serviceRunning = true;
     private boolean dead = false;
 
     private Throwable error;
@@ -86,7 +100,13 @@ public class AdbService extends Service {
     public void onDestroy() {
         super.onDestroy();
         Log.i(TAG, "adb service destroyed");
-        stayAlive = false;
+
+        serviceRunning = false;
+        synchronized (commandQueue) {
+            CommandQueueEntry entry;
+            while ((entry = commandQueue.poll()) != null)
+                entry.adapter().throwError(new RejectedExecutionException("service died"));
+        }
     }
 
     @Nullable
@@ -99,7 +119,7 @@ public class AdbService extends Service {
         dead = false;
         try {
 
-            while (stayAlive) {
+            while (serviceRunning) {
 
                 if (adbConnectionManager == null || !adbConnectionManager.isConnected()) {
                     adbConnectionManager = null;
@@ -118,7 +138,54 @@ public class AdbService extends Service {
                 }
 
 
-                //TODO
+                if (qdShell == null || qdShell.isDead()) {
+                    try {
+                        Log.i(TAG, "popping a new shell");
+                        AdbStream stream = adbConnectionManager.openStream("shell:");
+                        QdAdbShell newQdShell = new QdAdbShell(stream);
+                        if (!newQdShell.init()) {
+                            //todo: should probably have a max number of retries
+                            Log.e(TAG, "qd shell init failed");
+                            continue;
+                        }
+
+                        qdShell = newQdShell;
+                    } catch (Throwable t) {
+                        Log.e(TAG, "failed to open a 'shell:' stream", t);
+                        continue;
+                    }
+                }
+
+
+                while (!qdShell.isDead()) {
+                    CommandQueueEntry entry;
+                    synchronized (commandQueue) {
+                        entry = commandQueue.poll();
+                        if (entry == null) {
+                            try {
+                                commandQueue.wait(IDLE_CONNECTION_POLL_INTERVAL);
+                            } catch (InterruptedException ignored) {}
+
+                            break;
+                        }
+                    }
+
+                    if (entry.queueExpiration() < SystemClock.elapsedRealtime()) {
+                        Log.w(TAG, "polled command queue entry is expired");
+                        // caller doesn't want it executed this late, discard the event
+                        entry.adapter().throwError(new RejectedExecutionException("queue timeout reached before command could be executed"));
+                        continue;
+                    }
+
+                    try {
+                        Log.d(TAG, "executing queued command");
+                        QdAdbShell.Result result = qdShell.execute(entry.command(), entry.executionTimeout());
+                        entry.adapter().provideResult(result);
+                    } catch (QdAdbShell.ExecutionException e) {
+                        Log.w(TAG, "exception during queued command execution", e);
+                        entry.adapter().throwError(e);
+                    }
+                }
             }
         } catch (RuntimeException e) {
             Log.e(TAG, "unexpected exception in connection loop", e);
@@ -175,14 +242,14 @@ public class AdbService extends Service {
 
     private void tryEnableWirelessDebugging() {
         ContentResolver cr = getContentResolver();
-        wirelessDebuggingForceEnabled = Settings.Global.getInt(cr, "adb_wifi_enabled", 0) == 1;
+        wirelessDebuggingForceEnabled = Settings.Global.getInt(cr, SETTINGS_GLOBAL_WIRELESS_DEBUGGING_KEY, 0) == 1;
         if (wirelessDebuggingForceEnabled) return;
         Log.v(TAG, "wireless debugging is not enabled");
 
         try {
             // wireless debugging can be kick-started automatically if WRITE_SECURE_SETTINGS is granted
-            Settings.Global.putInt(cr, "adb_wifi_enabled", 1);
-            wirelessDebuggingForceEnabled = Settings.Global.getInt(cr, "adb_wifi_enabled", 0) == 1;
+            Settings.Global.putInt(cr, SETTINGS_GLOBAL_WIRELESS_DEBUGGING_KEY, 1);
+            wirelessDebuggingForceEnabled = Settings.Global.getInt(cr, SETTINGS_GLOBAL_WIRELESS_DEBUGGING_KEY, 0) == 1;
         } catch (SecurityException e) {
             // does not necessarily mean wireless debugging wasn't manually enabled
             Log.w(TAG, "failed to set wireless debugging", e);
@@ -275,7 +342,21 @@ public class AdbService extends Service {
 
     public class ServiceBinder extends Binder {
 
+        public Sec<QdAdbShell.Result> executeSafeCommand(String command, long queueTimeout, long executionTimeout) {
+            synchronized (commandQueue) {
+                if (!serviceRunning)
+                    return Sec.premeditatedError(new RejectedExecutionException("service died"));
 
+                SecAdapter.SecWithAdapter<QdAdbShell.Result> secWithAdapter = SecAdapter.createThreadless();
+                commandQueue.add(new CommandQueueEntry(
+                        command,
+                        SystemClock.elapsedRealtime() + queueTimeout,
+                        executionTimeout,
+                        secWithAdapter.secAdapter()));
+                commandQueue.notify();
+                return secWithAdapter.sec();
+            }
+        }
 
     }
 }
