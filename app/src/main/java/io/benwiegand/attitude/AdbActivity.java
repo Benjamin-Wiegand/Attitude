@@ -80,7 +80,13 @@ public class AdbActivity extends AppCompatActivity {
             return insets;
         });
 
-        //todo: CONSOLE BAN WARNING
+        new AlertDialog.Builder(this)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle("CONSOLE BAN WARNING")
+                .setMessage("Having ADB enabled while connected to the Internet without an active Meta Developer account MAY RESULT IN ADB CEASING TO FUNCTION.\nThis persists EVEN AFTER A FACTORY RESET until you connect to the Internet and log in with a Meta Developer account.\n\nOr so I've heard. Proceed at your own risk.")
+                .setPositiveButton("got it", null)
+                .setCancelable(false)
+                .show();
 
         // todo: check INTERNET permission, previous versions of the app didn't require it
 
