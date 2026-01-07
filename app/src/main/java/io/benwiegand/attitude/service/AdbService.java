@@ -10,7 +10,9 @@ import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.Log;
@@ -39,6 +41,8 @@ public class AdbService extends Service {
 
     private static final long IDLE_CONNECTION_POLL_INTERVAL = 5000;
 
+    private static final long CONNECTION_LOOP_AUTO_RESTART_AFTER_FAILURE_DELAY = 10000;
+
     private static final String FOREGROUND_NOTIFICATION_CHANNEL = "adb_foreground";
     private static final String SETTINGS_GLOBAL_WIRELESS_DEBUGGING_KEY = "adb_wifi_enabled";
 
@@ -61,6 +65,7 @@ public class AdbService extends Service {
 
     private record CommandQueueEntry(String command, long queueExpiration, long executionTimeout, SecAdapter<QdAdbShell.Result> adapter) {}
 
+    private final Handler handler = new Handler(Looper.getMainLooper());
     private final Binder binder = new ServiceBinder();
 
     private Status currentStatus = Status.BUSY;
@@ -74,7 +79,7 @@ public class AdbService extends Service {
 
     private Thread connectionThread;
     private boolean serviceRunning = true;
-    private boolean dead = false;
+    private boolean dead = true;
 
     private Throwable error;
 
@@ -90,10 +95,7 @@ public class AdbService extends Service {
         Log.i(TAG, "adb service created");
 
         createForegroundNotification();
-
-        // many long running operations in init
-        connectionThread = new Thread(this::connectionLoop);
-        connectionThread.start();
+        startConnectionThread();
     }
 
     @Override
@@ -113,6 +115,18 @@ public class AdbService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return binder;
+    }
+
+    private void startConnectionThread() {
+        assert Looper.getMainLooper().isCurrentThread();    // this is not thread safe
+        if (!dead) {
+            Log.d(TAG, "connection loop thread already running");
+            return;
+        }
+
+        Log.i(TAG, "starting connection loop thread");
+        connectionThread = new Thread(this::connectionLoop);
+        connectionThread.start();
     }
 
     private void connectionLoop() {
@@ -195,17 +209,18 @@ public class AdbService extends Service {
             // ensure coherent status
             if (!currentStatus.isTerminal()) {
                 Log.wtf(TAG, "connection loop terminating while status is still " + currentStatus);
-                error = new RuntimeException("connection loop terminated unexpectedly. is this a bug?");
+                error = new RuntimeException("connection loop terminated unexpectedly. is this a bug?").fillInStackTrace();
                 updateStatus(Status.PROBLEM);
             }
 
             Log.i(TAG, "connection loop death");
             dead = true;
 
-            //TODO: remove
-            stopSelf();
+            if (serviceRunning) {
+                Log.i(TAG, "scheduling restart of connection loop in " + CONNECTION_LOOP_AUTO_RESTART_AFTER_FAILURE_DELAY + " ms");
+                handler.postDelayed(this::startConnectionThread, CONNECTION_LOOP_AUTO_RESTART_AFTER_FAILURE_DELAY);
+            }
 
-            //todo: restart after a little while
         }
     }
 
