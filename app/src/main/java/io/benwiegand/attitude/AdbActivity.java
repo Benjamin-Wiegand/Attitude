@@ -40,6 +40,9 @@ import io.github.muntashirakon.adb.android.AdbMdns;
 public class AdbActivity extends AppCompatActivity {
     private static final String TAG = AdbActivity.class.getSimpleName();
 
+    private static final long COMMAND_QUEUE_TIMEOUT = 10000;
+    private static final long COMMAND_EXECUTION_TIMEOUT = 5000;
+
     private static final String TEST_COMMAND = "id -u";
 
     private AdbConnectionManager adbConnectionManager = null;
@@ -77,31 +80,55 @@ public class AdbActivity extends AppCompatActivity {
             return insets;
         });
 
+        //todo: CONSOLE BAN WARNING
+
         // todo: check INTERNET permission, previous versions of the app didn't require it
 
         findViewById(R.id.pair_button).setOnClickListener(v -> startPairing());
 
-        findViewById(R.id.test_command_button).setOnClickListener(v -> {
-            getAdbBinder().ifPresent(b -> {
-                logStatus("executing test command: " + TEST_COMMAND);
-                b.executeSafeCommand(TEST_COMMAND, 1000, 1000)
-                        .doOnResult(r -> {
-                            logStatus("command exited with code: " + r.returnCode());
-                            logStatus("command output: " + new String(r.out()));
-                        })
-                        .doOnError(t -> {
-                            if (t instanceof QdAdbShell.ExecutionException e) {
-                                logStatus(e.getMessage());
-                                if (e.getCause() != null)
-                                    logStatus("underlying exception: " + e.getCause().getMessage());
-                            } else {
-                                logStatus("command execution failed with unexpected error: " + t.getMessage());
-                            }
-                            runOnUiThread(() -> showError(this, t));
-                        })
-                        .callMeWhenDone();
-            });
-        });
+        findViewById(R.id.test_command_button).setOnClickListener(v -> runCommand(TEST_COMMAND));
+
+        findViewById(R.id.grant_secure_settings_tool_button).setOnClickListener(v -> new AlertDialog.Builder(this)
+                .setTitle("allow wireless adb auto-start")
+                .setMessage("grants Attitude the WRITE_SECURE_SETTINGS permission, allowing it to enable wireless debugging as needed.\n\nalso sets adb pairing connections to never expire, so you don't have to pair wireless debugging again.")
+                .setPositiveButton("do it", (d, i) -> {
+                    runCommand("pm grant io.benwiegand.attitude android.permission.WRITE_SECURE_SETTINGS");
+                    runCommand("settings put global adb_allowed_connection_time 0");
+                })
+                .setNegativeButton("cancel", null)
+                .show()
+        );
+
+        findViewById(R.id.remove_bloatware_icons_tool_button).setOnClickListener(v -> new AlertDialog.Builder(this)
+                .setTitle("bloatware icon removal")
+                .setMessage("To remove the icons:\n - use \"disable apps\"\n - reboot or use the \"crash everything\" tool\n - add apps of your choosing into the now empty space\n - optionally, use \"enable apps\" if you still want to launch those apps elsewhere (you may have to reboot again after this)\n\nNote: after re-enabling the apps and rebooting again, any unused space on the taskbar will be re-populated with the bloatware app icons.")
+                .setPositiveButton("disable apps", (d, i) -> {
+                    runCommand("pm disable-user --user 0 com.oculus.explore");
+                    runCommand("pm uninstall --user 0 com.oculus.socialplatform");
+                    runCommand("pm disable-user --user 0 com.oculus.store");
+                    runCommand("pm disable-user --user 0 com.oculus.browser");
+                })
+                .setNeutralButton("re-enable apps", (d, i) -> {
+                    runCommand("pm enable com.oculus.explore");
+                    runCommand("pm install-existing com.oculus.socialplatform");
+                    runCommand("pm enable com.oculus.store");
+                    runCommand("pm enable com.oculus.browser");
+                })
+                .setNegativeButton("cancel", null)
+                .show()
+        );
+
+        findViewById(R.id.crash_everything_tool_button).setOnClickListener(v -> new AlertDialog.Builder(this)
+                .setTitle("crash everything")
+                .setMessage("crashes vrshell and systemux to be restarted. this takes the entire ui and all open apps with it.\n\nuseful as a very fast soft reboot for the UI, but not as useful as an actual reboot.")
+                .setPositiveButton("do it", (d, i) -> {
+                    runCommand("am force-stop com.oculus.systemux && am force-stop com.oculus.vrshell");
+                })
+                .setNegativeButton("cancel", null)
+                .show()
+        );
+
+        findViewById(R.id.noclip_tool_button); //todo
 
         bindService(new Intent(this, AdbService.class), serviceConnection, BIND_AUTO_CREATE);
 
@@ -271,5 +298,32 @@ public class AdbActivity extends AppCompatActivity {
         });
 
     }
+
+    private void runCommand(String command) {
+        getAdbBinder().ifPresentOrElse(b -> {
+            logStatus("executing: " + command);
+            b.executeSafeCommand(command, COMMAND_QUEUE_TIMEOUT, COMMAND_EXECUTION_TIMEOUT)
+                    .doOnResult(r -> {
+                        logStatus("exit code: " + r.returnCode());
+                        if (r.out().length == 0) return;
+                        String out = new String(r.out()).stripTrailing();
+                        logStatus("output: \n" + out + "\n===========");
+                    })
+                    .doOnError(t -> {
+                        if (t instanceof QdAdbShell.ExecutionException e) {
+                            if (e.getCause() != null)
+                                logStatus("problem during execution: " + e.getCause().getMessage());
+                            if (e.isCmdSentOff())
+                                logStatus("command may still have been executed");
+                        } else {
+                            logStatus("execution failed: " + t.getMessage());
+                        }
+                        runOnUiThread(() -> showError(this, t));
+                    })
+                    .callMeWhenDone();
+        }, () ->
+                logStatus("AdbService not connected!"));
+    }
+
 
 }

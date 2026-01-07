@@ -11,25 +11,73 @@
         android:id="@+id/adb_operations"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:visibility="invisible"
         tools:visibility="visible"
         >
 
-        <Button
-            android:id="@+id/pair_button"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="start pairing"
+            android:orientation="horizontal"
+            >
+
+            <Button
+                android:id="@+id/pair_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="start pairing"
+                />
+
+            <Button
+                android:id="@+id/test_command_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="run test command"
+                />
+
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="tools (shows info before applying)"
+            android:layout_marginTop="8dp"
+            style="@style/TextAppearance.Material3.ActionBar.Title"
             />
 
         <Button
-            android:id="@+id/test_command_button"
-            android:layout_width="wrap_content"
+            android:id="@+id/grant_secure_settings_tool_button"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="run test command"
+            android:text="allow wireless debugging auto-start"
             />
+
+        <Button
+            android:id="@+id/remove_bloatware_icons_tool_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="remove un-removable taskbar icons"
+            />
+
+        <Button
+            android:id="@+id/crash_everything_tool_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="crash everything"
+            />
+
+        <Button
+            android:id="@+id/noclip_tool_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="crash play space boundary service"
+            />
+
 
     </LinearLayout>
+
 
     <ScrollView
         android:layout_width="wrap_content"
