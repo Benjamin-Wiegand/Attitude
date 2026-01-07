@@ -242,6 +242,20 @@ public class AdbService extends Service {
 
     private void tryEnableWirelessDebugging() {
         ContentResolver cr = getContentResolver();
+
+        if (wirelessDebuggingForceEnabled && error instanceof InterruptedException) {
+            // sometimes wireless debugging fails to start correctly, toggling it off and on fixes it
+            Log.i(TAG, "restarting wireless debugging");
+            try {
+                Settings.Global.putInt(cr, SETTINGS_GLOBAL_WIRELESS_DEBUGGING_KEY, 0);
+                Settings.Global.putInt(cr, SETTINGS_GLOBAL_WIRELESS_DEBUGGING_KEY, 1);
+                wirelessDebuggingForceEnabled = Settings.Global.getInt(cr, SETTINGS_GLOBAL_WIRELESS_DEBUGGING_KEY, 0) == 1;
+                return;
+            } catch (SecurityException e) {
+                Log.w(TAG, "got security exception while restarting wireless debugging");
+            }
+        }
+
         wirelessDebuggingForceEnabled = Settings.Global.getInt(cr, SETTINGS_GLOBAL_WIRELESS_DEBUGGING_KEY, 0) == 1;
         if (wirelessDebuggingForceEnabled) return;
         Log.v(TAG, "wireless debugging is not enabled");
