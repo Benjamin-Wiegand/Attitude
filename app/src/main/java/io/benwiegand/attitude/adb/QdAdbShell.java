@@ -34,6 +34,7 @@ public class QdAdbShell {
     // not the safest way of serializing command outputs, but it should work for the predictable inputs I'll be passing
     private static final String QD_SHELL_SCRIPT = """
             qdshell() {
+                set -o pipefail
                 printf '!!!'
                 printf 'qd'
                 printf '!!!'
