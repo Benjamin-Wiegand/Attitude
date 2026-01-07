@@ -11,7 +11,6 @@ import static io.benwiegand.attitude.util.WiFiUtil.requestRuntimeLocationPermiss
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -58,46 +57,18 @@ public class MainActivity extends AppCompatActivity {
 
 
         findViewById(R.id.android_settings_button)
-                .setOnClickListener(v -> launchSettings());
+                .setOnClickListener(v -> PackageUtil.launchAndroidSettings(this));
 
         findViewById(R.id.accessibility_settings_button)
-                .setOnClickListener(v -> startActivity(createSettingsActionIntent(Settings.ACTION_ACCESSIBILITY_SETTINGS)));
+                .setOnClickListener(v -> startActivity(PackageUtil.createAndroidSettingsIntent(Settings.ACTION_ACCESSIBILITY_SETTINGS)));
 
         findViewById(R.id.notification_listener_settings_button)
                 .setOnClickListener(v -> startActivity(
-                        createSettingsActionIntent(Settings.ACTION_NOTIFICATION_LISTENER_DETAIL_SETTINGS)
+                        PackageUtil.createAndroidSettingsIntent(Settings.ACTION_NOTIFICATION_LISTENER_DETAIL_SETTINGS)
                                 .putExtra(Settings.EXTRA_NOTIFICATION_LISTENER_COMPONENT_NAME, new ComponentName(this, MuhNotificationService.class).flattenToShortString())));
 
-
     }
 
-    private void launchSettings() {
-        try {
-            startActivity(createSettingsIntent());
-        } catch (Throwable t) {
-            Log.e(TAG, "failed to directly launch settings, using workaround");
-            startActivity(createSettingsAppInfoIntent());
-        }
-    }
-
-    private Intent createSettingsActionIntent(String action) {
-        return new Intent(action)
-                .setPackage("com.android.settings")
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    }
-
-    private Intent createSettingsAppInfoIntent() {
-        return new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:com.android.settings"))
-                .setPackage("com.android.settings")
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    }
-
-    private Intent createSettingsIntent() {
-        return new Intent(Intent.ACTION_MAIN, Uri.parse("package:com.android.settings"))
-                .setComponent(new ComponentName("com.android.settings", "com.android.settings.Settings"))
-                .addCategory(Intent.CATEGORY_LAUNCHER)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    }
 
     @SuppressLint("MissingPermission")  // it does actually check
     private void wifiAutoConnect() {

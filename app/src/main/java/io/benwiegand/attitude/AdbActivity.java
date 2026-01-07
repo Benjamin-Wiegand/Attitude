@@ -47,6 +47,8 @@ public class AdbActivity extends AppCompatActivity {
 
     private AdbConnectionManager adbConnectionManager = null;
 
+    private boolean skipDevelopmentSettingsCheck = false;
+
     private AdbService.ServiceBinder adbBinder = null;  // use getAdbBinder()
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -239,7 +241,22 @@ public class AdbActivity extends AppCompatActivity {
     // note: you can still test this on a phone using split-screen mode
     private void startPairing() {
 
-        // TODO: check if enabled, tell user how to enable
+        boolean devOptions = Settings.Global.getInt(getContentResolver(), Settings.Global.DEVELOPMENT_SETTINGS_ENABLED, 0) != 0;
+        if (!devOptions && !skipDevelopmentSettingsCheck) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Enable developer options")
+                    .setMessage("Before pairing, you need to enable development settings:\n - go to: Android Settings > (scroll down) > About headset > (scroll down)\n - tap \"Build number\" repeatedly at least 7 times until development settings gets enabled\n - you may have to enter your pin, it's the same one you use on the lock screen\n\nAfter doing this, try starting pairing again.\n\nIf you have another way of pairing, select \"ignore\" to skip this check.")
+                    .setPositiveButton("close", null)
+                    .setNegativeButton("ignore", (d, i) -> {
+                        // I believe PrivateQuest lets you go through wireless pairing via BLE
+                        skipDevelopmentSettingsCheck = true;
+                        startPairing();
+                    })
+                    .show();
+            PackageUtil.launchAndroidSettings(this);
+            return;
+        }
+
         startActivity(PackageUtil.createAndroidSettingsIntent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS));
 
 
