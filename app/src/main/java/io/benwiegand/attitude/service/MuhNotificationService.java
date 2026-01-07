@@ -8,8 +8,10 @@ import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
+import java.util.List;
 import java.util.function.Consumer;
 
+import io.benwiegand.attitude.callback.CallbackRegistrar;
 import io.benwiegand.attitude.callback.NotificationListenerCallback;
 import io.benwiegand.attitude.makeshiftbind.MakeshiftBind;
 import io.benwiegand.attitude.makeshiftbind.MakeshiftBindCallback;
@@ -20,7 +22,7 @@ public class MuhNotificationService extends NotificationListenerService implemen
     private final ServiceBinder binder = new ServiceBinder();
     private MakeshiftBind makeshiftBind = null;
 
-    private NotificationListenerCallback listenerCallback;
+    private CallbackRegistrar<NotificationListenerCallback> listenerCallbackRegistrar;
 
     private boolean connected = false;
 
@@ -29,6 +31,12 @@ public class MuhNotificationService extends NotificationListenerService implemen
     public void onCreate() {
         super.onCreate();
         Log.v(TAG, "notification listener created");
+
+        listenerCallbackRegistrar = new CallbackRegistrar<>(List.of(
+                cb -> {
+                    if (connected) cb.onNotificationsReady();
+                }
+        ));
 
         // Note: DO NOT, I REPEAT, DO NOT EVER OVERRIDE onBind() AND EXPECT THIS SHIT TO WORK!!!!!
         // YOU WILL WASTE HALF A DAY SMASHING YOUR HEAD AGAINST A BRICK WALL
@@ -48,39 +56,30 @@ public class MuhNotificationService extends NotificationListenerService implemen
         return binder;
     }
 
-
-    private void callListenerCallbacks(Consumer<NotificationListenerCallback> callbackConsumer) {
-        // TODO: should have a list and a lock
-        NotificationListenerCallback cb = listenerCallback;
-        if (cb == null) return;
-        callbackConsumer.accept(cb);
-    }
-
-
     @Override
     public void onListenerConnected() {
         connected = true;
         Log.v(TAG, "notification listener connected");
-        callListenerCallbacks(NotificationListenerCallback::onNotificationsReady);
+        listenerCallbackRegistrar.callCallbacks(NotificationListenerCallback::onNotificationsReady);
     }
 
     @Override
     public void onListenerDisconnected() {
         connected = false;
         Log.v(TAG, "notification listener disconnected");
-        callListenerCallbacks(NotificationListenerCallback::onNotificationsUnready);
+        listenerCallbackRegistrar.callCallbacks(NotificationListenerCallback::onNotificationsUnready);
     }
 
     @Override
     public void onNotificationPosted(StatusBarNotification sbn, RankingMap rankingMap) {
         Log.d(TAG, "notification posted");
-        callListenerCallbacks(c -> c.onNotificationPost(sbn, rankingMap));
+        listenerCallbackRegistrar.callCallbacks(c -> c.onNotificationPost(sbn, rankingMap));
     }
 
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn, RankingMap rankingMap) {
         Log.d(TAG, "notification removed");
-        callListenerCallbacks(c -> c.onNotificationRemove(sbn, rankingMap));
+        listenerCallbackRegistrar.callCallbacks(c -> c.onNotificationRemove(sbn, rankingMap));
     }
 
 
@@ -95,12 +94,11 @@ public class MuhNotificationService extends NotificationListenerService implemen
         }
 
         public void registerCallback(NotificationListenerCallback callback) {
-            listenerCallback = callback;
-            if (connected) callback.onNotificationsReady();
+            listenerCallbackRegistrar.registerCallback(callback);
         }
 
         public void unregisterCallback(NotificationListenerCallback callback) {
-            if (listenerCallback == callback) listenerCallback = null;
+            listenerCallbackRegistrar.unregisterCallback(callback);
         }
 
     }
