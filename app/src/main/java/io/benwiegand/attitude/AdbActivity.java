@@ -134,7 +134,15 @@ public class AdbActivity extends AppCompatActivity {
                 .show()
         );
 
-        findViewById(R.id.noclip_tool_button); //todo
+        findViewById(R.id.noclip_tool_button).setOnClickListener(v -> new AlertDialog.Builder(this)
+                .setTitle("crash vr guardian")
+                .setMessage("Disables the blue wall that marks the size of your play space, also called the \"Boundary\". Useful for testing and debugging.\n\nWARNING: This will allow you to walk into walls without warning, which can be very painful.")
+                .setPositiveButton("do it", (d, i) -> {
+                    runCommand("am force-stop com.oculus.guardian");
+                })
+                .setNegativeButton("cancel", null)
+                .show()
+        );
 
         bindService(new Intent(this, AdbService.class), serviceConnection, BIND_AUTO_CREATE);
 
