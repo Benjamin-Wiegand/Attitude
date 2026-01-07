@@ -42,7 +42,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            tools:text="tools (shows info before applying)"
+            android:text="tools (shows info before applying)"
             android:layout_marginTop="8dp"
             style="@style/TextAppearance.Material3.ActionBar.Title"
             />
