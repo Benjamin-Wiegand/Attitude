@@ -88,8 +88,6 @@ public class AdbActivity extends AppCompatActivity {
                 .setCancelable(false)
                 .show();
 
-        // todo: check INTERNET permission, previous versions of the app didn't require it
-
         findViewById(R.id.pair_button).setOnClickListener(v -> startPairing());
 
         findViewById(R.id.test_command_button).setOnClickListener(v -> runCommand(TEST_COMMAND));
