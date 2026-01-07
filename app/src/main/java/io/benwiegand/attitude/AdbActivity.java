@@ -4,8 +4,11 @@ import static io.benwiegand.attitude.util.UiUtil.showError;
 import static io.benwiegand.attitude.util.UiUtil.showToast;
 
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
@@ -23,9 +26,11 @@ import androidx.core.view.WindowInsetsCompat;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.interfaces.RSAPrivateKey;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.benwiegand.attitude.adb.AdbConnectionManager;
+import io.benwiegand.attitude.adb.QdAdbShell;
 import io.benwiegand.attitude.man.KeyMan;
 import io.benwiegand.attitude.service.AdbService;
 import io.benwiegand.attitude.util.KeyUtil;
@@ -35,7 +40,30 @@ import io.github.muntashirakon.adb.android.AdbMdns;
 public class AdbActivity extends AppCompatActivity {
     private static final String TAG = AdbActivity.class.getSimpleName();
 
+    private static final String TEST_COMMAND = "id -u";
+
     private AdbConnectionManager adbConnectionManager = null;
+
+    private AdbService.ServiceBinder adbBinder = null;  // use getAdbBinder()
+    private final ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.i(TAG, "adb service connected");
+            logStatus("AdbService connected");
+            adbBinder = (AdbService.ServiceBinder) service;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.i(TAG, "adb service disconnected");
+            logStatus("AdbService disconnected");
+            adbBinder = null;
+        }
+    };
+
+    private Optional<AdbService.ServiceBinder> getAdbBinder() {
+        return Optional.ofNullable(adbBinder);
+    }
 
 
     @Override
@@ -53,14 +81,40 @@ public class AdbActivity extends AppCompatActivity {
 
         findViewById(R.id.pair_button).setOnClickListener(v -> startPairing());
 
-        findViewById(R.id.connect_button).setOnClickListener(v -> {
-            startService(new Intent(this, AdbService.class));
+        findViewById(R.id.test_command_button).setOnClickListener(v -> {
+            getAdbBinder().ifPresent(b -> {
+                logStatus("executing test command: " + TEST_COMMAND);
+                b.executeSafeCommand(TEST_COMMAND, 1000, 1000)
+                        .doOnResult(r -> {
+                            logStatus("command exited with code: " + r.returnCode());
+                            logStatus("command output: " + new String(r.out()));
+                        })
+                        .doOnError(t -> {
+                            if (t instanceof QdAdbShell.ExecutionException e) {
+                                logStatus(e.getMessage());
+                                if (e.getCause() != null)
+                                    logStatus("underlying exception: " + e.getCause().getMessage());
+                            } else {
+                                logStatus("command execution failed with unexpected error: " + t.getMessage());
+                            }
+                            runOnUiThread(() -> showError(this, t));
+                        })
+                        .callMeWhenDone();
+            });
         });
+
+        bindService(new Intent(this, AdbService.class), serviceConnection, BIND_AUTO_CREATE);
 
         // this will take quite a while the first time
         // the adb operations row will be unhidden after it completes
         new Thread(this::initKeys)
                 .start();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(serviceConnection);
     }
 
     private void logStatus(String text) {

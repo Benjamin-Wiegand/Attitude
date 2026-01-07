@@ -23,10 +23,10 @@
             />
 
         <Button
-            android:id="@+id/connect_button"
+            android:id="@+id/test_command_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="connect"
+            android:text="run test command"
             />
 
     </LinearLayout>
