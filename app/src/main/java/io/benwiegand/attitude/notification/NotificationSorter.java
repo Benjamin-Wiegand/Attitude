@@ -16,8 +16,8 @@ import java.util.Optional;
 public class NotificationSorter {
     private static final String TAG = NotificationSorter.class.getSimpleName();
 
-    private static final long CASCADE_DOWN_ANIMATION_DURATION = 250;
-    private static final long CASCADE_DOWN_ANIMATION_DISTANCE_DP = 76;
+    private static final long CASCADE_ANIMATION_DURATION = 250;
+    private static final long CASCADE_ANIMATION_DISTANCE_DP = 76;
 
 
     private static final class Element {
@@ -113,10 +113,10 @@ public class NotificationSorter {
         } else {
 
             View rootView = dNotif.getRootView();
-            rootView.setTranslationY(-dpToPx(getContext(), CASCADE_DOWN_ANIMATION_DISTANCE_DP));
+            rootView.setTranslationY(-dpToPx(getContext(), CASCADE_ANIMATION_DISTANCE_DP));
             rootView.setAlpha(0);
             rootView.animate()
-                    .setDuration(CASCADE_DOWN_ANIMATION_DURATION)
+                    .setDuration(CASCADE_ANIMATION_DURATION)
                     .alpha(1)
                     .translationY(0)
                     .start();
@@ -134,7 +134,15 @@ public class NotificationSorter {
 
         sorted = false;
 
-        listRootView.removeView(e.displayedNotification.getRootView());
+        View rootView = e.displayedNotification.getRootView();
+        listRootView.startViewTransition(rootView);
+        listRootView.removeView(rootView);
+        rootView.animate()
+                .translationY(-CASCADE_ANIMATION_DISTANCE_DP)
+                .setDuration(CASCADE_ANIMATION_DURATION)
+                .alpha(0)
+                .withEndAction(() -> listRootView.endViewTransition(rootView))
+                .start();
     }
 
     public void resetAll() {
