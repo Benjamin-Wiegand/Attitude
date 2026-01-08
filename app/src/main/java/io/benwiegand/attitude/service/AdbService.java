@@ -46,6 +46,8 @@ public class AdbService extends Service {
 
     private static final long CONNECTION_LOOP_AUTO_RESTART_AFTER_FAILURE_DELAY = 10000;
 
+    private static final long WIRELESS_DEBUGGING_RESTART_DELAY = 1000;
+
     private static final String FOREGROUND_NOTIFICATION_CHANNEL = "adb_foreground";
     private static final String SETTINGS_GLOBAL_WIRELESS_DEBUGGING_KEY = "adb_wifi_enabled";
 
@@ -270,12 +272,18 @@ public class AdbService extends Service {
             // sometimes wireless debugging fails to start correctly, toggling it off and on fixes it
             Log.i(TAG, "restarting wireless debugging");
             try {
+                // messy hack, but this seems like the simplest way to ensure the system actually notices the change and restarts it
                 Settings.Global.putInt(cr, SETTINGS_GLOBAL_WIRELESS_DEBUGGING_KEY, 0);
-                Settings.Global.putInt(cr, SETTINGS_GLOBAL_WIRELESS_DEBUGGING_KEY, 1);
-                wirelessDebuggingForceEnabled = Settings.Global.getInt(cr, SETTINGS_GLOBAL_WIRELESS_DEBUGGING_KEY, 0) == 1;
+                handler.postDelayed(() -> {
+                    try {
+                        Settings.Global.putInt(cr, SETTINGS_GLOBAL_WIRELESS_DEBUGGING_KEY, 1);
+                    } catch (SecurityException e) {
+                        Log.w(TAG, "got security exception while re-enabling wireless debugging for restart");
+                    }
+                }, WIRELESS_DEBUGGING_RESTART_DELAY);
                 return;
             } catch (SecurityException e) {
-                Log.w(TAG, "got security exception while restarting wireless debugging");
+                Log.w(TAG, "got security exception while disabling wireless debugging for restart");
             }
         }
 
