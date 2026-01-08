@@ -33,6 +33,8 @@ public class PrefMan {
     public static final String REMAP_TARGET_ATTITUDE = "attitude";
     public static final String REMAP_TARGET_LIGHTNING_LAUNCHER = "lightning_launcher";
 
+    // notification drawer settings
+    public static final String KEY_HIDE_FOREGROUND_META_NOTIFICATIONS = "hide_foreground_meta_notifications";
 
     private final Context context;
     private SharedPreferences prefs = null;

@@ -1,5 +1,6 @@
 package io.benwiegand.attitude;
 
+import static io.benwiegand.attitude.misc.MetaNotificationConstants.META_HIDDEN_NOTIFICATION_PACKAGES;
 import static io.benwiegand.attitude.util.UiUtil.dpToPx;
 import static io.benwiegand.attitude.util.UiUtil.tintView;
 
@@ -25,6 +26,7 @@ import java.util.Optional;
 
 import io.benwiegand.attitude.callback.NotificationListenerCallback;
 import io.benwiegand.attitude.makeshiftbind.MakeshiftServiceConnection;
+import io.benwiegand.attitude.man.PrefMan;
 import io.benwiegand.attitude.notification.NotificationInflater;
 import io.benwiegand.attitude.notification.NotificationSorter;
 import io.benwiegand.attitude.service.MuhNotificationService;
@@ -45,6 +47,9 @@ public class NotificationPanelActivity extends AppCompatActivity implements Noti
 
     private boolean showDebug;
 
+    private boolean hideForegroundMetaNotifications = true;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,6 +60,9 @@ public class NotificationPanelActivity extends AppCompatActivity implements Noti
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        PrefMan prefMan = new PrefMan(this);
+        hideForegroundMetaNotifications = prefMan.read(Boolean.class, PrefMan.KEY_HIDE_FOREGROUND_META_NOTIFICATIONS, true);
 
         showDebug = getIntent().getBooleanExtra(INTENT_EXTRA_SHOW_DEBUG, DEFAULT_SHOW_DEBUG);
 
@@ -128,7 +136,19 @@ public class NotificationPanelActivity extends AppCompatActivity implements Noti
     public void onNotificationPost(StatusBarNotification sbn, NotificationListenerService.RankingMap rankingMap) {
         Log.v(TAG, "notif posted!");
 
-        View notificationView = notificationInflater.inflate(sbn, rankingMap);
+        boolean hide = false;
+
+        if (META_HIDDEN_NOTIFICATION_PACKAGES.contains(sbn.getPackageName()) && !sbn.isClearable()) {
+            // hide normally hidden meta notifs
+            hide = hideForegroundMetaNotifications;
+        }
+
+        View notificationView;
+        if (!hide) {
+            notificationView = notificationInflater.inflate(sbn, rankingMap);
+        } else {
+            notificationView = new View(this);
+        }
 
         // TODO: properly handle groups
         if (sbn.isAppGroup()) {

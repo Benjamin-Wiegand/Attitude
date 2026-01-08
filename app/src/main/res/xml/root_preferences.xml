@@ -98,4 +98,16 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory
+        app:title="@string/notification_drawer_settings_header">
+
+        <SwitchPreferenceCompat
+            app:key="hide_foreground_meta_notifications"
+            app:title="@string/hide_foreground_meta_notifications"
+            app:summary="@string/hide_foreground_meta_notifications_summary"
+            app:defaultValue="true"
+            />
+
+    </PreferenceCategory>
+
 </PreferenceScreen>

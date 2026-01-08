@@ -77,4 +77,7 @@
     <string name="remap_library_long_press">Remap app drawer long press</string>
     <string name="remap_native_notification_window">Remap native notification window</string>
     <string name="remap_profile_button">Remap profile button</string>
+    <string name="notification_drawer_settings_header">Notification drawer</string>
+    <string name="hide_foreground_meta_notifications">Hide foreground system notifications</string>
+    <string name="hide_foreground_meta_notifications_summary">These are normally hidden in the system notification panel</string>
 </resources>
