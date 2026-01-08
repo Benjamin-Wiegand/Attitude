@@ -7,6 +7,7 @@ import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -59,15 +60,28 @@ public class AdbActivity extends AppCompatActivity {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             Log.i(TAG, "adb service connected");
-            logStatus("AdbService connected");
             adbBinder = (AdbService.ServiceBinder) service;
+            adbBinder.registerStatusCallback(AdbActivity.this::onAdbServiceStatusUpdate);
+
+            runOnUiThread(() -> {
+                TextView bindingText = findViewById(R.id.adb_service_binding_text);
+                bindingText.setText("bound");
+                bindingText.setTextColor(Color.GREEN);
+            });
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             Log.i(TAG, "adb service disconnected");
-            logStatus("AdbService disconnected");
+            getAdbBinder().ifPresent(b -> b.unregisterStatusCallback(AdbActivity.this::onAdbServiceStatusUpdate));
             adbBinder = null;
+
+            runOnUiThread(() -> {
+                if (isFinishing() || isDestroyed()) return;
+                TextView bindingText = findViewById(R.id.adb_service_binding_text);
+                bindingText.setText("dead");
+                bindingText.setTextColor(Color.RED);
+            });
         }
     };
 
@@ -149,6 +163,23 @@ public class AdbActivity extends AppCompatActivity {
                 .show()
         );
 
+
+        findViewById(R.id.adb_service_error_button).setOnClickListener(v -> {
+            getAdbBinder().ifPresentOrElse(b -> {
+                Throwable lastError = b.getLastError();
+                updateLatestAdbServiceErrorText(lastError);
+                if (lastError == null) {
+                    showError(this, "No error", "error is null");
+                    return;
+                }
+
+                showError(this, lastError);
+            }, () -> {
+                showError(this, "AdbService not bound", "Can't get latest error, the service isn't bound.");
+            });
+        });
+
+
         bindService(new Intent(this, AdbService.class), serviceConnection, BIND_AUTO_CREATE);
 
         // this will take quite a while the first time
@@ -178,6 +209,28 @@ public class AdbActivity extends AppCompatActivity {
                 adbLogScrollView.fullScroll(View.FOCUS_DOWN);
             });
         });
+    }
+
+    private void updateLatestAdbServiceErrorText(Throwable lastError) {
+        TextView lastErrorText = findViewById(R.id.adb_service_error_text);
+        lastErrorText.setText(lastError != null ? lastError.getClass().getSimpleName() : "null");
+    }
+
+    private void onAdbServiceStatusUpdate(AdbService.Status status) {
+        TextView serviceStatusText = findViewById(R.id.adb_service_status_text);
+        serviceStatusText.setText(status.name());
+        int statusColor;
+        if (status.isTerminal()) {
+            statusColor = Color.RED;
+        } else if (status == AdbService.Status.CONNECTED) {
+            statusColor = Color.GREEN;
+        } else {
+            statusColor = Color.YELLOW;
+        }
+        serviceStatusText.setTextColor(statusColor);
+
+        getAdbBinder().ifPresent(b ->
+                updateLatestAdbServiceErrorText(b.getLastError()));
     }
 
     private void initKeys() {

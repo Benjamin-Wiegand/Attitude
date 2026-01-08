@@ -23,15 +23,18 @@ import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.interfaces.RSAPrivateKey;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.function.Consumer;
 
 import io.benwiegand.attitude.AdbActivity;
 import io.benwiegand.attitude.adb.AdbConnectionManager;
 import io.benwiegand.attitude.adb.QdAdbShell;
 import io.benwiegand.attitude.async.Sec;
 import io.benwiegand.attitude.async.SecAdapter;
+import io.benwiegand.attitude.callback.CallbackRegistrar;
 import io.benwiegand.attitude.man.KeyMan;
 import io.github.muntashirakon.adb.AdbPairingRequiredException;
 import io.github.muntashirakon.adb.AdbStream;
@@ -49,14 +52,15 @@ public class AdbService extends Service {
     public enum Status {
         NEED_SETUP,
         NEED_WIRELESS_DEBUGGING,
-        NEED_PAIRING_AGAIN,
+        NEED_PAIRING,
+        // TODO: also check for wifi
         PROBLEM,
         BUSY,
         CONNECTED;
 
         public boolean isTerminal() {
             return switch (this) {
-                case NEED_SETUP, PROBLEM, NEED_PAIRING_AGAIN, NEED_WIRELESS_DEBUGGING -> true;
+                case NEED_SETUP, PROBLEM, NEED_PAIRING, NEED_WIRELESS_DEBUGGING -> true;
                 case BUSY, CONNECTED -> false;
             };
         }
@@ -69,6 +73,9 @@ public class AdbService extends Service {
     private final Binder binder = new ServiceBinder();
 
     private Status currentStatus = Status.BUSY;
+    private final CallbackRegistrar<Consumer<Status>> statusCallbackRegistrar = new CallbackRegistrar<>(List.of(
+            cb -> cb.accept(currentStatus)
+    ));
 
     private AdbConnectionManager adbConnectionManager = null;
     private QdAdbShell qdShell = null;
@@ -87,6 +94,7 @@ public class AdbService extends Service {
     private void updateStatus(Status status) {
         Log.i(TAG, "status: " + status);
         currentStatus = status;
+        handler.post(() -> statusCallbackRegistrar.callCallbacks(cb -> cb.accept(status)));
     }
 
     @Override
@@ -348,7 +356,7 @@ public class AdbService extends Service {
             }
         } catch (AdbPairingRequiredException e) {
             error = e;
-            updateStatus(Status.NEED_PAIRING_AGAIN);
+            updateStatus(Status.NEED_PAIRING);
         } catch (IOException e) {
             Log.e(TAG, "failed to connect", e);
             error = e;
@@ -385,6 +393,22 @@ public class AdbService extends Service {
                 commandQueue.notify();
                 return secWithAdapter.sec();
             }
+        }
+
+        public Status getStatus() {
+            return currentStatus;
+        }
+
+        public Throwable getLastError() {
+            return error;
+        }
+
+        public void registerStatusCallback(Consumer<Status> callback) {
+            statusCallbackRegistrar.registerCallback(callback);
+        }
+
+        public void unregisterStatusCallback(Consumer<Status> callback) {
+            statusCallbackRegistrar.unregisterCallback(callback);
         }
 
     }

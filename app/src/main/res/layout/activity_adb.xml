@@ -6,6 +6,84 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="AdbService status"
+        android:layout_marginTop="8dp"
+        style="@style/TextAppearance.Material3.ActionBar.Subtitle"
+        />
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+
+        <TableRow>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Connection service binding"
+                android:layout_marginHorizontal="8dp"
+                />
+
+            <TextView
+                android:id="@+id/adb_service_binding_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="bound"
+                tools:textColor="#ff00ff00"
+                />
+
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Current status"
+                android:layout_marginHorizontal="8dp"
+                />
+
+            <TextView
+                android:id="@+id/adb_service_status_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="CONNECTED"
+                tools:textColor="#ff00ff00"
+                />
+
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Most recent connection error"
+                android:layout_marginHorizontal="8dp"
+                />
+
+            <Button
+                android:id="@+id/adb_service_error_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="view"
+                />
+
+            <TextView
+                android:id="@+id/adb_service_error_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="InterruptedException"
+                android:layout_marginHorizontal="8dp"
+                />
+
+        </TableRow>
+
+    </TableLayout>
 
     <LinearLayout
         android:id="@+id/adb_operations"
@@ -44,7 +122,7 @@
             android:layout_height="wrap_content"
             android:text="tools (shows info before applying)"
             android:layout_marginTop="8dp"
-            style="@style/TextAppearance.Material3.ActionBar.Title"
+            style="@style/TextAppearance.Material3.ActionBar.Subtitle"
             />
 
         <Button
@@ -78,6 +156,13 @@
 
     </LinearLayout>
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="pairing/tools logs (not AdbService logs)"
+        android:layout_marginTop="8dp"
+        style="@style/TextAppearance.Material3.ActionBar.Subtitle"
+        />
 
     <ScrollView
         android:id="@+id/adb_log_scrollview"
