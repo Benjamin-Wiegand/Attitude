@@ -30,6 +30,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
 
 import io.benwiegand.attitude.AdbActivity;
+import io.benwiegand.attitude.R;
 import io.benwiegand.attitude.adb.AdbConnectionManager;
 import io.benwiegand.attitude.adb.QdAdbShell;
 import io.benwiegand.attitude.async.Sec;
@@ -239,7 +240,7 @@ public class AdbService extends Service {
         NotificationManager nm = getSystemService(NotificationManager.class);
         NotificationChannel channel = nm.getNotificationChannel(FOREGROUND_NOTIFICATION_CHANNEL);
         if (channel == null)
-            nm.createNotificationChannel(new NotificationChannel(FOREGROUND_NOTIFICATION_CHANNEL, "ADB Service Foreground", NotificationManager.IMPORTANCE_LOW));
+            nm.createNotificationChannel(new NotificationChannel(FOREGROUND_NOTIFICATION_CHANNEL, getString(R.string.adb_service_foreground_notification_channel_name), NotificationManager.IMPORTANCE_LOW));
 
         Intent intent = new Intent(this, AdbActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
@@ -249,8 +250,8 @@ public class AdbService extends Service {
                 .setSmallIcon(android.R.drawable.ic_dialog_info)    // TODO: better icon for this
                 .setOngoing(true)
                 .setContentIntent(pendingIntent)
-                .setContentTitle("ADB Service")
-                .setSubText("service is running")
+                .setContentTitle(getString(R.string.adb_service_foreground_notification_title))
+                .setSubText(getString(R.string.adb_service_foreground_notification_sub_text))
                 .build();
 
         try {

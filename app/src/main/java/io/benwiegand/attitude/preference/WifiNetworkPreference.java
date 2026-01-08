@@ -1,6 +1,7 @@
 package io.benwiegand.attitude.preference;
 
 import static io.benwiegand.attitude.util.UiUtil.showError;
+import static io.benwiegand.attitude.util.UiUtil.showUnexpectedError;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -11,6 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.preference.ListPreference;
 
+import io.benwiegand.attitude.R;
+import io.benwiegand.attitude.exception.UserFriendlyException;
 import io.benwiegand.attitude.util.WiFiUtil;
 
 public class WifiNetworkPreference extends ListPreference {
@@ -25,7 +28,7 @@ public class WifiNetworkPreference extends ListPreference {
 
         setSummaryProvider(p -> {
             // get value directly instead of finding index
-            if (getValue() == null) return "not set";
+            if (getValue() == null) return getContext().getString(R.string.preference_not_set_summary);
             return getValue();
         });
     }
@@ -63,10 +66,12 @@ public class WifiNetworkPreference extends ListPreference {
             setEntryValues(wifiSSIDs);
             setEntries(wifiSSIDs);
 
-        } catch (Throwable t) {
-            Log.e(TAG, "failed to get wifi list", t);
-            showError(getContext(), t);
-            return;
+        } catch (UserFriendlyException e) {
+            Log.e(TAG, "failed to get wifi list", e);
+            showError(getContext(), R.string.wifi_list_error_title, e);
+        } catch (RuntimeException e) {
+            Log.e(TAG, "failed to get wifi list", e);
+            showUnexpectedError(getContext(), R.string.wifi_list_error_title, e);
         }
 
         super.onClick();

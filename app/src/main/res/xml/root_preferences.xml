@@ -3,18 +3,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory
-        app:title="Wifi auto-connect">
+        app:title="@string/wifi_auto_connect_settings_header">
 
         <SwitchPreferenceCompat
             app:key="wifi_connect_on_boot"
-            app:title="Connect to wifi on boot"
+            app:title="@string/connect_to_wifi_on_boot"
             app:defaultValue="false"
             />
 
         <!-- TODO: not supported yet -->
         <SwitchPreferenceCompat
             app:key="wifi_connect_on_wake"
-            app:title="Connect to wifi when waking from sleep"
+            app:title="@string/connect_to_wifi_when_waking_from_sleep"
             app:dependency="wifi_connect_on_boot"
             app:defaultValue="true"
             app:isPreferenceVisible="false"
@@ -22,7 +22,7 @@
 
         <io.benwiegand.attitude.preference.WifiNetworkPreference
             app:key="wifi_name"
-            app:title="Select wifi network"
+            app:title="@string/select_wifi_network"
             app:dependency="wifi_connect_on_boot"
             />
 
@@ -30,17 +30,17 @@
 
     <PreferenceCategory
         app:key="block_popup_category"
-        app:title="Pop-up blocking">
+        app:title="@string/pop_up_blocking_settings_header">
 
         <SwitchPreferenceCompat
             app:key="block_popup_horizon_feed"
-            app:title="Block &quot;Horizon Feed&quot;"
+            app:title="@string/block_horizon_feed"
             app:defaultValue="true"
             />
 
         <SwitchPreferenceCompat
             app:key="block_popup_passthrough"
-            app:title="Block &quot;Passthrough&quot; virtual item suggestion"
+            app:title="@string/block_passthrough"
             app:defaultValue="true"
             />
 
@@ -48,17 +48,17 @@
 
     <PreferenceCategory
         app:key="remap_category"
-        app:title="UI remapping">
+        app:title="@string/ui_remapping_settings_header">
 
         <SwitchPreferenceCompat
             app:key="remap_global_enable"
-            app:title="Enable remapping"
+            app:title="@string/enable_remapping"
             app:defaultValue="true"
             />
 
         <ListPreference
             app:key="remap_app_drawer_window"
-            app:title="Remap app drawer"
+            app:title="@string/remap_library"
             app:entries="@array/remap_target_names"
             app:entryValues="@array/remap_target_values"
             app:useSimpleSummaryProvider="true"
@@ -68,7 +68,7 @@
 
         <ListPreference
             app:key="remap_app_drawer_drag"
-            app:title="Remap app drawer long press"
+            app:title="@string/remap_library_long_press"
             app:entries="@array/remap_target_names"
             app:entryValues="@array/remap_target_values"
             app:useSimpleSummaryProvider="true"
@@ -78,7 +78,7 @@
 
         <ListPreference
             app:key="remap_notification_window"
-            app:title="Remap native notification window"
+            app:title="@string/remap_native_notification_window"
             app:entries="@array/remap_target_names"
             app:entryValues="@array/remap_target_values"
             app:useSimpleSummaryProvider="true"
@@ -88,10 +88,11 @@
 
         <ListPreference
             app:key="remap_profile_click"
-            app:title="Remap profile button"
+            app:title="@string/remap_profile_button"
             app:entries="@array/remap_target_names"
             app:entryValues="@array/remap_target_values"
             app:useSimpleSummaryProvider="true"
+            app:defaultValue=""
             app:dependency="remap_global_enable"
             />
 

@@ -1,7 +1,8 @@
 package io.benwiegand.attitude;
 
-import static io.benwiegand.attitude.util.UiUtil.showError;
+import static io.benwiegand.attitude.util.UiUtil.showDebugError;
 import static io.benwiegand.attitude.util.UiUtil.showToast;
+import static io.benwiegand.attitude.util.UiUtil.showUnexpectedError;
 
 import android.app.AlertDialog;
 import android.content.ComponentName;
@@ -65,7 +66,7 @@ public class AdbActivity extends AppCompatActivity {
 
             runOnUiThread(() -> {
                 TextView bindingText = findViewById(R.id.adb_service_binding_text);
-                bindingText.setText("bound");
+                bindingText.setText(R.string.service_connection_bound_status);
                 bindingText.setTextColor(Color.GREEN);
             });
         }
@@ -79,7 +80,7 @@ public class AdbActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 if (isFinishing() || isDestroyed()) return;
                 TextView bindingText = findViewById(R.id.adb_service_binding_text);
-                bindingText.setText("dead");
+                bindingText.setText(R.string.service_connection_not_bound_status);
                 bindingText.setTextColor(Color.RED);
             });
         }
@@ -103,9 +104,9 @@ public class AdbActivity extends AppCompatActivity {
 
         new AlertDialog.Builder(this)
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setTitle("CONSOLE BAN WARNING")
-                .setMessage("Having ADB enabled while connected to the Internet without an active Meta Developer account MAY RESULT IN ADB CEASING TO FUNCTION.\nThis persists EVEN AFTER A FACTORY RESET until you connect to the Internet and log in with a Meta Developer account.\n\nOr so I've heard. Proceed at your own risk.")
-                .setPositiveButton("got it", null)
+                .setTitle(R.string.console_ban_warning_title)
+                .setMessage(R.string.adb_ban_warning_message)
+                .setPositiveButton(R.string.got_it_button, null)
                 .setCancelable(false)
                 .show();
 
@@ -114,26 +115,26 @@ public class AdbActivity extends AppCompatActivity {
         findViewById(R.id.test_command_button).setOnClickListener(v -> runCommand(TEST_COMMAND));
 
         findViewById(R.id.grant_secure_settings_tool_button).setOnClickListener(v -> new AlertDialog.Builder(this)
-                .setTitle("allow wireless adb auto-start")
-                .setMessage("grants Attitude the WRITE_SECURE_SETTINGS permission, allowing it to enable wireless debugging as needed.\n\nalso sets adb pairing connections to never expire, so you don't have to pair wireless debugging again.")
-                .setPositiveButton("do it", (d, i) -> {
+                .setTitle(R.string.grant_secure_settings_tool_name)
+                .setMessage(R.string.grant_secure_settings_tool_message)
+                .setPositiveButton(R.string.do_it_button, (d, i) -> {
                     runCommand("pm grant io.benwiegand.attitude android.permission.WRITE_SECURE_SETTINGS");
                     runCommand("settings put global adb_allowed_connection_time 0");
                 })
-                .setNegativeButton("cancel", null)
+                .setNegativeButton(R.string.cancel_button, null)
                 .show()
         );
 
         findViewById(R.id.remove_bloatware_icons_tool_button).setOnClickListener(v -> new AlertDialog.Builder(this)
-                .setTitle("bloatware icon removal")
-                .setMessage("To remove the icons:\n - use \"disable apps\"\n - reboot or use the \"crash everything\" tool\n - add apps of your choosing into the now empty space\n - optionally, use \"enable apps\" if you still want to launch those apps elsewhere (you may have to reboot again after this)\n\nNote: after re-enabling the apps and rebooting again, any unused space on the taskbar will be re-populated with the bloatware app icons.")
-                .setPositiveButton("disable apps", (d, i) -> {
+                .setTitle(R.string.remove_bloatware_icons_tool_name)
+                .setMessage(R.string.remove_bloatware_icons_tool_message)
+                .setPositiveButton(R.string.disable_apps_button, (d, i) -> {
                     runCommand("pm disable-user --user 0 com.oculus.explore");
                     runCommand("pm uninstall --user 0 com.oculus.socialplatform");
                     runCommand("pm disable-user --user 0 com.oculus.store");
                     runCommand("pm disable-user --user 0 com.oculus.browser");
                 })
-                .setNeutralButton("re-enable apps", (d, i) -> {
+                .setNeutralButton(R.string.re_enable_apps_button, (d, i) -> {
                     runCommand("pm enable com.oculus.explore");
                     runCommand("pm install-existing com.oculus.socialplatform");
                     runCommand("pm enable com.oculus.store");
@@ -144,22 +145,22 @@ public class AdbActivity extends AppCompatActivity {
         );
 
         findViewById(R.id.crash_everything_tool_button).setOnClickListener(v -> new AlertDialog.Builder(this)
-                .setTitle("crash everything")
-                .setMessage("crashes vrshell and systemux to be restarted. this takes the entire ui and all open apps with it.\n\nuseful as a very fast soft reboot for the UI, but not as useful as an actual reboot.")
-                .setPositiveButton("do it", (d, i) -> {
+                .setTitle(R.string.crash_everything_tool_name)
+                .setMessage(R.string.crash_everything_tool_message)
+                .setPositiveButton(R.string.do_it_button, (d, i) -> {
                     runCommand("am force-stop com.oculus.systemux && am force-stop com.oculus.vrshell");
                 })
-                .setNegativeButton("cancel", null)
+                .setNegativeButton(R.string.cancel_button, null)
                 .show()
         );
 
         findViewById(R.id.noclip_tool_button).setOnClickListener(v -> new AlertDialog.Builder(this)
-                .setTitle("crash vr guardian")
-                .setMessage("Disables the blue wall that marks the size of your play space, also called the \"Boundary\". Useful for testing and debugging.\n\nWARNING: This will allow you to walk into walls without warning, which can be very painful.")
-                .setPositiveButton("do it", (d, i) -> {
+                .setTitle(R.string.noclip_tool_name)
+                .setMessage(R.string.noclip_tool_message)
+                .setPositiveButton(R.string.do_it_button, (d, i) -> {
                     runCommand("am force-stop com.oculus.guardian");
                 })
-                .setNegativeButton("cancel", null)
+                .setNegativeButton(R.string.cancel_button, null)
                 .show()
         );
 
@@ -169,13 +170,13 @@ public class AdbActivity extends AppCompatActivity {
                 Throwable lastError = b.getLastError();
                 updateLatestAdbServiceErrorText(lastError);
                 if (lastError == null) {
-                    showError(this, "No error", "error is null");
+                    showDebugError(this, "No error", "error is null");
                     return;
                 }
 
-                showError(this, lastError);
+                showDebugError(this, lastError);
             }, () -> {
-                showError(this, "AdbService not bound", "Can't get latest error, the service isn't bound.");
+                showDebugError(this, "AdbService not bound", "Can't get latest error, the service isn't bound.");
             });
         });
 
@@ -194,6 +195,7 @@ public class AdbActivity extends AppCompatActivity {
         unbindService(serviceConnection);
     }
 
+    // TODO: this creates more problems for localization than I initially (very naively) thought
     private void logStatus(String text) {
         // this is a very technical process, it's impossible to pretend it's not
         // technical users may appreciate seeing what is happening
@@ -213,11 +215,13 @@ public class AdbActivity extends AppCompatActivity {
 
     private void updateLatestAdbServiceErrorText(Throwable lastError) {
         TextView lastErrorText = findViewById(R.id.adb_service_error_text);
+        // debug text
         lastErrorText.setText(lastError != null ? lastError.getClass().getSimpleName() : "null");
     }
 
     private void onAdbServiceStatusUpdate(AdbService.Status status) {
         TextView serviceStatusText = findViewById(R.id.adb_service_status_text);
+        // debug text
         serviceStatusText.setText(status.name());
         int statusColor;
         if (status.isTerminal()) {
@@ -294,10 +298,10 @@ public class AdbActivity extends AppCompatActivity {
             runOnUiThread(() ->
                     findViewById(R.id.adb_operations).setVisibility(View.VISIBLE));
         } catch (Throwable t) {
-            showError(this, t);
+            showUnexpectedError(this, R.string.keystore_init_failure_title, t);
             logStatus("key init failure");
             Log.e(TAG, "exception during key initialization");
-            //todo: options to retry or delete keystore
+            //todo: options to retry or delete keystore + localized errors
         }
     }
 
@@ -308,10 +312,10 @@ public class AdbActivity extends AppCompatActivity {
         boolean devOptions = Settings.Global.getInt(getContentResolver(), Settings.Global.DEVELOPMENT_SETTINGS_ENABLED, 0) != 0;
         if (!devOptions && !skipDevelopmentSettingsCheck) {
             new AlertDialog.Builder(this)
-                    .setTitle("Enable developer options")
-                    .setMessage("Before pairing, you need to enable development settings:\n - go to: Android Settings > (scroll down) > About headset > (scroll down)\n - tap \"Build number\" repeatedly at least 7 times until development settings gets enabled\n - you may have to enter your pin, it's the same one you use on the lock screen\n\nAfter doing this, try starting pairing again.\n\nIf you have another way of pairing, select \"ignore\" to skip this check.")
-                    .setPositiveButton("close", null)
-                    .setNegativeButton("ignore", (d, i) -> {
+                    .setTitle(R.string.enable_developer_options_title)
+                    .setMessage(R.string.enable_developer_options_message)
+                    .setPositiveButton(R.string.close_button, null)
+                    .setNegativeButton(R.string.skip_developer_options_check_button, (d, i) -> {
                         // I believe PrivateQuest lets you go through wireless pairing via BLE
                         skipDevelopmentSettingsCheck = true;
                         startPairing();
@@ -349,7 +353,7 @@ public class AdbActivity extends AppCompatActivity {
         AlertDialog pairingCodeEntryDialog = new AlertDialog.Builder(this)
                 .setView(dialogRoot)
                 .setCancelable(false)
-                .setNegativeButton("cancel", (d, i) -> {
+                .setNegativeButton(R.string.cancel_button, (d, i) -> {
                     logStatus("cancelling pairing");
                     pairingDiscovery.stop();
                 })
@@ -373,19 +377,18 @@ public class AdbActivity extends AppCompatActivity {
                         // this is not returned by the library, but there's a note that says it should be added (as of v3.1.1).
                         // not sure what that means, but transfer this confusion to the user with a '?'.
                         logStatus("AdbConnectionManager.pair() returned false. bad pairing code or something went wrong?");
-                        runOnUiThread(() ->
-                                showError(this, "pairing failed", "bad pairing code or something went wrong?"));
-                        return;
+                        throw new RuntimeException("AdbConnectionManager.pair() returned false");   // not worth translating
                     }
 
                     logStatus("pairing successful");
-                    runOnUiThread(() -> showToast(this, "paring successful"));
+                    runOnUiThread(() -> showToast(this, R.string.pairing_successful_title));
 
                 } catch (Throwable t) {
                     // this is where all errors are actually returned by the library (as of v3.1.1)
                     Log.e(TAG, "pairing failed", t);
                     logStatus("pairing failed: " + t.getMessage());
-                    runOnUiThread(() -> showError(this, t));
+                    // TODO: handle individual errors properly
+                    runOnUiThread(() -> showUnexpectedError(this, R.string.pairing_failed_title, t));
                 }
             }).start();
         });
@@ -411,7 +414,7 @@ public class AdbActivity extends AppCompatActivity {
                         } else {
                             logStatus("execution failed: " + t.getMessage());
                         }
-                        runOnUiThread(() -> showError(this, t));
+                        runOnUiThread(() -> showDebugError(this, t));
                     })
                     .callMeWhenDone();
         }, () ->

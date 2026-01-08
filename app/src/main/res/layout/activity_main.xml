@@ -38,25 +38,25 @@
                 android:id="@+id/wifi_connect_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="wifi connect" />
+                android:text="@string/wifi_connect_button" />
 
             <Button
                 android:id="@+id/notification_panel_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="notification panel" />
+                android:text="@string/notification_panel_button" />
 
             <Button
                 android:id="@+id/settings_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="app settings" />
+                android:text="@string/app_settings_button" />
 
             <Button
                 android:id="@+id/adb_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="adb (beta)" />
+                android:text="@string/adb_setup_button" />
         </LinearLayout>
 
         <LinearLayout
@@ -69,19 +69,19 @@
                 android:id="@+id/android_settings_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="android settings" />
+                android:text="@string/android_settings_button" />
 
             <Button
                 android:id="@+id/accessibility_settings_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="accessibility settings" />
+                android:text="@string/accessibility_settings_button" />
 
             <Button
                 android:id="@+id/notification_listener_settings_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="notif listener settings" />
+                android:text="@string/notification_listener_settings_button" />
 
         </LinearLayout>
 

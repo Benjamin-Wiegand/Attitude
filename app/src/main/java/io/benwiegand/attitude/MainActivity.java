@@ -1,5 +1,6 @@
 package io.benwiegand.attitude;
 
+import static io.benwiegand.attitude.util.UiUtil.showUnexpectedError;
 import static io.benwiegand.attitude.util.WiFiUtil.connectToWifi;
 import static io.benwiegand.attitude.util.WiFiUtil.getBackgroundLocationPermission;
 import static io.benwiegand.attitude.util.WiFiUtil.getRuntimeLocationPermission;
@@ -17,6 +18,7 @@ import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import io.benwiegand.attitude.exception.UserFriendlyException;
 import io.benwiegand.attitude.man.PrefMan;
 import io.benwiegand.attitude.service.MuhNotificationService;
 import io.benwiegand.attitude.util.PackageUtil;
@@ -80,18 +82,21 @@ public class MainActivity extends AppCompatActivity {
                 requestRuntimeLocationPermission(this);
                 return;
             } else if (!connectToWifi(this, targetSSID)) {
-                showError(this, "wifi auto-connect failure", "connection result = false\n\nis wifi enabled?");
+                showError(this, R.string.wifi_auto_connect_error_title, R.string.wifi_auto_connect_failure_description_connection_result_false);
                 return;
             } else {
-                showToast(this, "wifi auto-connect success!");
+                showToast(this, R.string.wifi_auto_connect_success);
             }
 
             if (!getBackgroundLocationPermission(this))
                 requestBackgroundLocationPermission(this);
 
-        } catch (Throwable t) {
-            Log.e(TAG, "wifi auto-connect failure", t);
-            showError(this, t);
+        } catch (UserFriendlyException e) {
+            Log.e(TAG, "wifi auto-connect failure", e);
+            showError(this, R.string.wifi_auto_connect_error_title, e);
+        } catch (RuntimeException e) {
+            Log.e(TAG, "unexpected wifi auto-connect failure", e);
+            showUnexpectedError(this, R.string.wifi_auto_connect_error_title, e);
         }
     }
 

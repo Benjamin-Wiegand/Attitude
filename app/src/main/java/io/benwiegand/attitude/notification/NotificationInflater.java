@@ -1,7 +1,9 @@
 package io.benwiegand.attitude.notification;
 
 import static io.benwiegand.attitude.util.UiUtil.dpToPx;
+import static io.benwiegand.attitude.util.UiUtil.showDebugError;
 import static io.benwiegand.attitude.util.UiUtil.showError;
+import static io.benwiegand.attitude.util.UiUtil.showUnexpectedError;
 
 import android.app.AlertDialog;
 import android.app.Notification;
@@ -295,7 +297,7 @@ public class NotificationInflater {
                             actionIntent.send(context, 0, intent);
                         } catch (PendingIntent.CanceledException e) {
                             Log.e(TAG, "notification text input action intent expired", e);
-                            showError(context, e);
+                            showUnexpectedError(context, R.string.notification_action_error_title, e);
                         }
 
                         inputDialog.dismiss();
@@ -333,7 +335,8 @@ public class NotificationInflater {
                     onClickIntent.send();
                 } catch (PendingIntent.CanceledException e) {
                     Log.w(TAG, "notification pending intent expired", e);
-                    if (showDebug) showError(context, new RuntimeException("notification pending intent is expired", e));
+                    if (showDebug)
+                        showDebugError(context, new RuntimeException("notification pending intent is expired", e));
                 }
             });
         }

@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             style="@style/MaterialAlertDialog.Material3.Title.Text"
-            android:text="notificatoins"
+            android:text="@string/notifications_title"
             android:gravity="center_vertical"
             android:drawablePadding="16dp"
             app:drawableStartCompat="@android:drawable/ic_lock_silent_mode_off"

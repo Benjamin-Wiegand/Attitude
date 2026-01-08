@@ -1,7 +1,6 @@
 package io.benwiegand.attitude.service;
 
 import static io.benwiegand.attitude.misc.Constants.*;
-import static io.benwiegand.attitude.util.UiUtil.showError;
 import static io.benwiegand.attitude.util.WiFiUtil.connectToWifi;
 import static io.benwiegand.attitude.util.WiFiUtil.getRuntimeLocationPermission;
 
@@ -88,7 +87,6 @@ public class MuhAccessibilityService extends AccessibilityService implements Mak
                     }
                 } catch (Throwable t) {
                     Log.e(TAG, "Wifi auto-connect failed", t);
-                    showError(this, t);
                 }
 
             },

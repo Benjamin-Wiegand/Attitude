@@ -6,13 +6,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- hard-coded text on this page will most likely be replaced in the near future -->
+    <!-- most of it also annotates non-translatable debugging information -->
+
+    <!-- debug info, not worth translating -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="AdbService status"
         android:layout_marginTop="8dp"
         style="@style/TextAppearance.Material3.ActionBar.Subtitle"
-        />
+        tools:ignore="HardcodedText" />
 
     <TableLayout
         android:layout_width="match_parent"
@@ -21,12 +25,13 @@
 
         <TableRow>
 
+            <!-- debug info, not worth translating -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Connection service binding"
                 android:layout_marginHorizontal="8dp"
-                />
+                tools:ignore="HardcodedText" />
 
             <TextView
                 android:id="@+id/adb_service_binding_text"
@@ -40,12 +45,13 @@
 
         <TableRow>
 
+            <!-- debug info, not worth translating -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Current status"
                 android:layout_marginHorizontal="8dp"
-                />
+                tools:ignore="HardcodedText" />
 
             <TextView
                 android:id="@+id/adb_service_status_text"
@@ -59,19 +65,21 @@
 
         <TableRow>
 
+            <!-- debug info, not worth translating -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Most recent connection error"
                 android:layout_marginHorizontal="8dp"
-                />
+                tools:ignore="HardcodedText" />
 
+            <!-- debug info, not worth translating -->
             <Button
                 android:id="@+id/adb_service_error_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="view"
-                />
+                tools:ignore="HardcodedText" />
 
             <TextView
                 android:id="@+id/adb_service_error_text"
@@ -104,15 +112,16 @@
                 android:id="@+id/pair_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="start pairing"
+                android:text="@string/start_pairing_button"
                 />
 
+            <!-- debug info, not worth translating -->
             <Button
                 android:id="@+id/test_command_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="run test command"
-                />
+                tools:ignore="HardcodedText" />
 
 
         </LinearLayout>
@@ -120,7 +129,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="tools (shows info before applying)"
+            android:text="@string/adb_tools_header_title"
             android:layout_marginTop="8dp"
             style="@style/TextAppearance.Material3.ActionBar.Subtitle"
             />
@@ -129,40 +138,41 @@
             android:id="@+id/grant_secure_settings_tool_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="allow wireless debugging auto-start"
+            android:text="@string/grant_secure_settings_tool_name"
             />
 
         <Button
             android:id="@+id/remove_bloatware_icons_tool_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="remove un-removable taskbar icons"
+            android:text="@string/remove_bloatware_icons_tool_name"
             />
 
         <Button
             android:id="@+id/crash_everything_tool_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="crash everything"
+            android:text="@string/crash_everything_tool_name"
             />
 
         <Button
             android:id="@+id/noclip_tool_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="crash vr guardian / boundary service"
+            android:text="@string/noclip_tool_name"
             />
 
 
     </LinearLayout>
 
+    <!-- debug info, not worth translating -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="pairing/tools logs (not AdbService logs)"
         android:layout_marginTop="8dp"
         style="@style/TextAppearance.Material3.ActionBar.Subtitle"
-        />
+        tools:ignore="HardcodedText" />
 
     <ScrollView
         android:id="@+id/adb_log_scrollview"

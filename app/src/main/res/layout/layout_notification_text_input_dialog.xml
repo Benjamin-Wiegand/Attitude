@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:hint="action input"
+        android:hint="@string/notification_action_input_hint_placeholder"
         android:autofillHints=""
         android:inputType="text"
         />
@@ -23,7 +23,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="0"
-        android:contentDescription="submit"
+        android:contentDescription="@string/submit_button"
         android:src="@android:drawable/ic_menu_send"
         />
 

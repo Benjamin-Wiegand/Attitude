@@ -9,7 +9,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Pairing"
+        android:text="@string/adb_pairing_dialog_title"
         style="@style/MaterialAlertDialog.Material3.Title.Text"
         android:layout_marginBottom="12dp"
         />
@@ -17,7 +17,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="To start pairing, go to: Developer options > Wireless debugging > Pair device with pairing code"
+        android:text="@string/adb_pairing_instructions"
         style="@style/MaterialAlertDialog.Material3.Body.Text"
         />
 
@@ -44,7 +44,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="waiting for pairing to start"
+                android:text="@string/adb_pairing_session_discovery_text"
                 style="@style/MaterialAlertDialog.Material3.Body.Text"
                 />
 
@@ -65,7 +65,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Enter the pairing code below"
+            android:text="@string/adb_pairing_enter_pairing_code_instruction"
             style="@style/MaterialAlertDialog.Material3.Body.Text"
             />
 
@@ -81,7 +81,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="pairing code"
+                android:hint="@string/adb_pairing_code_hint"
                 android:autofillHints=""
                 android:inputType="number"
                 />
@@ -91,7 +91,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="0"
-                android:contentDescription="submit"
+                android:contentDescription="@string/submit_button"
                 android:src="@android:drawable/ic_menu_send"
                 />
 
