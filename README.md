@@ -19,9 +19,15 @@ The key benefit is that Attitude does not require root, allowing you to enjoy an
     - The "Passthrough" dialog that prompts you to add a useless mirror
 - Re-map some non-functional UI elements to more useful things
     - Profile button (click)
-    - App drawer (press and hold)
+    - Library (press and hold)
+    - Library window (opened by clicking)
+    - Notifications window (opened by clicking)
 - Shortcut to the real Android Settings app
     - Opens "App Info" page on newer OS versions as a workaround, but you can launch settings from there.
+- Some ADB tools for de-bloating and convenience
+    - Remove bloatware icons from dock/taskbar (yes, all of them)
+    - Temporarily disable VR Guardian/Boundary service (the blue play area walls)
+    - Crash the entire UI as a fast soft-reboot
 
 ## Compatibility
 Currently only tested on my Quest 2 running v83, but might work on newer/older versions.
