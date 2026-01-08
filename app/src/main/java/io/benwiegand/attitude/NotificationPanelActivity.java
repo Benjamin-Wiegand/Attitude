@@ -1,7 +1,6 @@
 package io.benwiegand.attitude;
 
 import static io.benwiegand.attitude.misc.MetaNotificationConstants.META_HIDDEN_NOTIFICATION_PACKAGES;
-import static io.benwiegand.attitude.util.UiUtil.dpToPx;
 import static io.benwiegand.attitude.util.UiUtil.tintView;
 
 import android.content.ComponentName;
@@ -27,6 +26,7 @@ import java.util.Optional;
 import io.benwiegand.attitude.callback.NotificationListenerCallback;
 import io.benwiegand.attitude.makeshiftbind.MakeshiftServiceConnection;
 import io.benwiegand.attitude.man.PrefMan;
+import io.benwiegand.attitude.notification.DisplayedNotification;
 import io.benwiegand.attitude.notification.NotificationInflater;
 import io.benwiegand.attitude.notification.NotificationSorter;
 import io.benwiegand.attitude.service.MuhNotificationService;
@@ -36,8 +36,6 @@ public class NotificationPanelActivity extends AppCompatActivity implements Noti
     private static final boolean DEFAULT_SHOW_DEBUG = false;
     public static final String INTENT_EXTRA_SHOW_DEBUG = "io.benwiegand.attitude.NotificationPanelActivity.showDebug";
 
-    private static final long CASCADE_DOWN_ANIMATION_DURATION = 250;
-    private static final long CASCADE_DOWN_ANIMATION_DISTANCE_DP = 76;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
 
@@ -143,28 +141,21 @@ public class NotificationPanelActivity extends AppCompatActivity implements Noti
             hide = hideForegroundMetaNotifications;
         }
 
-        View notificationView;
+        DisplayedNotification displayedNotification;
         if (!hide) {
-            notificationView = notificationInflater.inflate(sbn, rankingMap);
+            displayedNotification = notificationInflater.inflate(sbn, rankingMap);
         } else {
-            notificationView = new View(this);
+            displayedNotification = new DisplayedNotification(this, handler, sbn);
         }
 
         // TODO: properly handle groups
-        if (sbn.isAppGroup()) {
+//        if (sbn.isAppGroup()) {
             // TODO: find the actual way to hide group headers, this ain't it
 //            notificationView.setVisibility(View.GONE);
 //            Log.w(TAG, "not showing app group notification");
-        }
+//        }
 
-        notificationView.setTranslationY(-dpToPx(this, CASCADE_DOWN_ANIMATION_DISTANCE_DP));
-        notificationView.setAlpha(0);
-        notificationView.animate()
-                .setDuration(CASCADE_DOWN_ANIMATION_DURATION)
-                .alpha(1)
-                .translationY(0)
-                .start();
-        notificationSorter.addNotification(sbn, notificationView, rankingMap);
+        notificationSorter.addNotification(displayedNotification, rankingMap);
     }
 
     @Override

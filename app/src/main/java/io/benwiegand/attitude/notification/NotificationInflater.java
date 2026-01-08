@@ -2,7 +2,6 @@ package io.benwiegand.attitude.notification;
 
 import static io.benwiegand.attitude.util.UiUtil.dpToPx;
 import static io.benwiegand.attitude.util.UiUtil.showDebugError;
-import static io.benwiegand.attitude.util.UiUtil.showError;
 import static io.benwiegand.attitude.util.UiUtil.showUnexpectedError;
 
 import android.app.AlertDialog;
@@ -22,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -51,6 +51,14 @@ public class NotificationInflater {
     private static final RemoteResourceId alternateExpandTargetId = new RemoteResourceId("android:id/alternate_expand_target");
 
     private static final RemoteResourceId actionsId = new RemoteResourceId("android:id/actions");
+
+
+    private static class InflatingNotification {
+        // builders are a pain in the ass to generate
+        View bigContentView = null;
+        View contentView = null;
+
+    }
 
 
     public NotificationInflater(Context context, LayoutInflater layoutInflater, ViewGroup notificationListView, boolean showDebug) {
@@ -312,21 +320,6 @@ public class NotificationInflater {
         }
     }
 
-    private void setupExpandContract(View notificationFrame, View bigContentView, View contentView) {
-        Runnable expandTransition = setupViewTransition(notificationFrame, contentView, bigContentView);
-        Runnable collapseTransition = setupViewTransition(notificationFrame, bigContentView, contentView);
-
-        findInContentView(contentView, expandButtonId)
-                .ifPresent(ev -> ev.setOnClickListener(v -> expandTransition.run()));
-        findInContentView(contentView, alternateExpandTargetId)
-                .ifPresent(ev -> ev.setOnClickListener(v -> expandTransition.run()));
-
-        findInContentView(bigContentView, expandButtonId)
-                .ifPresent(ev -> ev.setOnClickListener(v -> collapseTransition.run()));
-        findInContentView(bigContentView, alternateExpandTargetId)
-                .ifPresent(ev -> ev.setOnClickListener(v -> collapseTransition.run()));
-    }
-
     private void setupOnClick(View notificationFrame, Notification notif) {
         PendingIntent onClickIntent = notif.contentIntent;
         if (onClickIntent != null) {
@@ -343,7 +336,21 @@ public class NotificationInflater {
 
     }
 
-    private void inflateContentViews(ViewGroup notificationFrame, StatusBarNotification sbn) {
+
+    private void setupExpandContract(DisplayedNotification dNotif, View bigContentView, View contentView) {
+
+        findInContentView(contentView, expandButtonId)
+                .ifPresent(ev -> ev.setOnClickListener(v -> dNotif.expand(true)));
+        findInContentView(contentView, alternateExpandTargetId)
+                .ifPresent(ev -> ev.setOnClickListener(v -> dNotif.expand(true)));
+
+        findInContentView(bigContentView, expandButtonId)
+                .ifPresent(ev -> ev.setOnClickListener(v -> dNotif.collapse(true)));
+        findInContentView(bigContentView, alternateExpandTargetId)
+                .ifPresent(ev -> ev.setOnClickListener(v -> dNotif.collapse(true)));
+    }
+
+    private void inflateContentViews(InflatingNotification n, ViewGroup notificationFrame, StatusBarNotification sbn) {
         // this is a hack.
         // not a very good one (see Notification.Builder.createContentView() documentation)
         // but it does work, it does roughly what I want, and it's a lot of work to rebuild from scratch (I've tried in the past)
@@ -357,7 +364,6 @@ public class NotificationInflater {
 //            Log.d(TAG, "bigtree:\n" + debugTraverse(bigContentView));
 
             if (notif.actions != null) setupTextInputActions(bigContentView, notif);
-            setupExpandContract(notificationFrame, bigContentView, contentView);
             setupOnClick(notificationFrame, notif);
 
             // terrible fix for content view taking up entire screen height
@@ -369,21 +375,48 @@ public class NotificationInflater {
             notificationFrame.addView(bigContentView);
             notificationFrame.addView(contentView);
 
-            // ensure both get drawn before hiding one
-            // it's for the animation, so not the end of the world if it doesn't actually get drawn before the callback
-            handler.post(() -> bigContentView.setVisibility(View.GONE));
+            n.bigContentView = bigContentView;
+            n.contentView = contentView;
 
         } catch (Throwable t) {
             Log.e(TAG, "failed to render notif", t);
             // TODO: fallback rendering
+            View bigContentView = new View(context);
+            View contentView = new View(context);
+            notificationFrame.addView(bigContentView);
+            notificationFrame.addView(contentView);
+
+            n.bigContentView = bigContentView;
+            n.contentView = contentView;
+
         }
     }
 
-    public View inflate(StatusBarNotification sbn, NotificationListenerService.RankingMap rankingMap) {
-        View containerView = layoutInflater.inflate(R.layout.layout_notification_container, notificationListView, false);
+    public DisplayedNotification inflate(StatusBarNotification sbn, NotificationListenerService.RankingMap rankingMap) {
+        InflatingNotification n = new InflatingNotification();
+
+        ViewGroup containerView = (ViewGroup) layoutInflater.inflate(R.layout.layout_notification_container, notificationListView, false);
+        FrameLayout notificationFrame = containerView.findViewById(R.id.notification_frame);
         if (showDebug) inflateDebugText(containerView, sbn, rankingMap);
-        inflateContentViews(containerView.findViewById(R.id.notification_frame), sbn);
-        return containerView;
+        inflateContentViews(n, notificationFrame, sbn);
+
+        Runnable expandTransition = setupViewTransition(notificationFrame, n.contentView, n.bigContentView);
+        Runnable collapseTransition = setupViewTransition(notificationFrame, n.bigContentView, n.contentView);
+
+
+        DisplayedNotification dNotif = new DisplayedNotification(
+                handler,
+                sbn,
+                containerView,
+                n.bigContentView,
+                n.contentView,
+                expandTransition,
+                collapseTransition
+        );
+
+        setupExpandContract(dNotif, n.bigContentView, n.contentView);
+
+        return dNotif;
     }
 
 

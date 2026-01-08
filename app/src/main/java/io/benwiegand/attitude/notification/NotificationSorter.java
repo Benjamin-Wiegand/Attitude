@@ -1,5 +1,8 @@
 package io.benwiegand.attitude.notification;
 
+import static io.benwiegand.attitude.util.UiUtil.dpToPx;
+
+import android.content.Context;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
@@ -13,8 +16,12 @@ import java.util.Optional;
 public class NotificationSorter {
     private static final String TAG = NotificationSorter.class.getSimpleName();
 
+    private static final long CASCADE_DOWN_ANIMATION_DURATION = 250;
+    private static final long CASCADE_DOWN_ANIMATION_DISTANCE_DP = 76;
+
+
     private static final class Element {
-        View view = null;
+        DisplayedNotification displayedNotification = null;
         final NotificationListenerService.Ranking ranking = new NotificationListenerService.Ranking();
         boolean rankingValid = false;
 
@@ -26,7 +33,7 @@ public class NotificationSorter {
         @Override
         public String toString() {
             return "Element{" +
-                    "view=" + view +
+                    "displayedNotification=" + displayedNotification +
                     ", ranking=" + ranking +
                     ", rankingValid=" + rankingValid +
                     '}';
@@ -42,22 +49,26 @@ public class NotificationSorter {
         this.listRootView = listRootView;
     }
 
-    public void addNotification(StatusBarNotification sbn, View view, NotificationListenerService.RankingMap rankingMap) {
-        Element e = keyMap.get(sbn.getKey());
+    private Context getContext() {
+        return listRootView.getContext();
+    }
+
+    public void addNotification(DisplayedNotification dNotif, NotificationListenerService.RankingMap rankingMap) {
+        Element e = keyMap.get(dNotif.getKey());
         if (e == null) {
-            Log.d(TAG, "notification added: " + sbn.getKey());
+            Log.d(TAG, "notification added: " + dNotif.getKey());
             e = new Element();
         } else {
-            Log.d(TAG, "notification updated: " + sbn.getKey());
+            Log.d(TAG, "notification updated: " + dNotif.getKey());
         }
 
-        View oldView = e.view;
-        e.view = view;
+        DisplayedNotification oldDNotif = e.displayedNotification;
+        e.displayedNotification = dNotif;
 
         e.rankingValid = false;
         if (rankingMap == null) {
             Log.w(TAG, "addNotification(): ranking map is null");
-        } else if (!rankingMap.getRanking(sbn.getKey(), e.ranking)) {
+        } else if (!rankingMap.getRanking(dNotif.getKey(), e.ranking)) {
             Log.wtf(TAG, "addNotificatio(): provided ranking map rejected key of provided notification");
         } else {
             e.rankingValid = true;
@@ -85,11 +96,33 @@ public class NotificationSorter {
             sorted = false;
         }
 
-        keyMap.put(sbn.getKey(), e);
-        listRootView.addView(view, index);
+        Log.d(TAG, "index = " + index);
 
-        if (oldView == null) return;
-        listRootView.removeView(oldView);
+        boolean startExpanded = index == 0 ||
+                (oldDNotif != null && oldDNotif.isExpanded());
+
+        keyMap.put(dNotif.getKey(), e);
+        dNotif.attach(listRootView, index, startExpanded);
+
+
+        if (oldDNotif != null) {
+            // remove the old one
+            listRootView.removeView(oldDNotif.getRootView());
+
+
+        } else {
+
+            View rootView = dNotif.getRootView();
+            rootView.setTranslationY(-dpToPx(getContext(), CASCADE_DOWN_ANIMATION_DISTANCE_DP));
+            rootView.setAlpha(0);
+            rootView.animate()
+                    .setDuration(CASCADE_DOWN_ANIMATION_DURATION)
+                    .alpha(1)
+                    .translationY(0)
+                    .start();
+        }
+
+
     }
 
     public void removeNotification(StatusBarNotification sbn) {
@@ -101,7 +134,7 @@ public class NotificationSorter {
 
         sorted = false;
 
-        listRootView.removeView(e.view);
+        listRootView.removeView(e.displayedNotification.getRootView());
     }
 
     public void resetAll() {
