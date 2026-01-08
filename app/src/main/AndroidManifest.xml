@@ -32,7 +32,12 @@
         <activity
             android:name=".NotificationPanelActivity"
             android:exported="true"
-            android:theme="@style/Theme.Attitude.NotificationDrawer" />
+            android:theme="@style/Theme.Attitude.NotificationDrawer"
+            android:configChanges="keyboard|keyboardHidden|screenSize|screenLayout|orientation|smallestScreenSize"
+            android:resizeableActivity="true"
+            android:launchMode="singleTask"
+            android:taskAffinity="io.benwiegand.attitude.NotificationPanelActivity"
+            />
         <activity
             android:name=".SettingsActivity"
             android:exported="false"
