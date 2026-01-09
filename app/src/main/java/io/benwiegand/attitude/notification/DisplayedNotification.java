@@ -74,9 +74,11 @@ public class DisplayedNotification {
         if (attached) throw new IllegalStateException("DisplayedNotification already attached");
         attached = true;
 
-        this.expanded = expanded;
-
         parent.addView(getRootView(), index);
+
+        if (hidden) return;
+
+        this.expanded = expanded;
 
         // ensures both content views get rendered for their height so their animations work
         View hiddenContentView = expanded ? contentView : bigContentView;
