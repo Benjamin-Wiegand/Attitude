@@ -37,7 +37,12 @@
             android:resizeableActivity="true"
             android:launchMode="singleTask"
             android:taskAffinity="io.benwiegand.attitude.NotificationPanelActivity"
-            />
+            >
+            <layout
+                android:defaultWidth="1024dp"
+                android:defaultHeight="640dp"
+                />
+        </activity>
         <activity
             android:name=".SettingsActivity"
             android:exported="false"
