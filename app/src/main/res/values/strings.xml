@@ -80,4 +80,6 @@
     <string name="notification_drawer_settings_header">Notification drawer</string>
     <string name="hide_foreground_meta_notifications">Hide foreground system notifications</string>
     <string name="hide_foreground_meta_notifications_summary">These are normally hidden in the system notification panel</string>
+    <string name="hide_notification_group_summaries">Hide notification group summaries</string>
+    <string name="hide_notification_group_summaries_summary">Turn this off if some notifications are missing</string>
 </resources>

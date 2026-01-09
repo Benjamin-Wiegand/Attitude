@@ -3,6 +3,7 @@ package io.benwiegand.attitude;
 import static io.benwiegand.attitude.misc.MetaNotificationConstants.META_HIDDEN_NOTIFICATION_PACKAGES;
 import static io.benwiegand.attitude.util.UiUtil.tintView;
 
+import android.app.Notification;
 import android.content.ComponentName;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -46,6 +47,7 @@ public class NotificationPanelActivity extends AppCompatActivity implements Noti
     private boolean showDebug;
 
     private boolean hideForegroundMetaNotifications = true;
+    private boolean hideNotificationGroups = true;
 
 
     @Override
@@ -61,6 +63,7 @@ public class NotificationPanelActivity extends AppCompatActivity implements Noti
 
         PrefMan prefMan = new PrefMan(this);
         hideForegroundMetaNotifications = prefMan.read(Boolean.class, PrefMan.KEY_HIDE_FOREGROUND_META_NOTIFICATIONS, true);
+        hideNotificationGroups = prefMan.read(Boolean.class, PrefMan.KEY_HIDE_NOTIFICATION_GROUPS, true);
 
         showDebug = getIntent().getBooleanExtra(INTENT_EXTRA_SHOW_DEBUG, DEFAULT_SHOW_DEBUG);
 
@@ -136,9 +139,14 @@ public class NotificationPanelActivity extends AppCompatActivity implements Noti
 
         boolean hide = false;
 
-        if (META_HIDDEN_NOTIFICATION_PACKAGES.contains(sbn.getPackageName()) && !sbn.isClearable()) {
+        if (hideForegroundMetaNotifications && META_HIDDEN_NOTIFICATION_PACKAGES.contains(sbn.getPackageName()) && !sbn.isClearable()) {
             // hide normally hidden meta notifs
-            hide = hideForegroundMetaNotifications;
+            hide = true;
+        } else if (hideNotificationGroups && (sbn.getNotification().flags & Notification.FLAG_GROUP_SUMMARY) != 0) {
+            // hide group summaries now
+            // TODO: this flag does not necessarily mean a notification is a group summary, but such inconsistencies are likely bugs in the source app. still, it should be fixed.
+            // TODO: properly handle groups
+            hide = true;
         }
 
         DisplayedNotification displayedNotification;
@@ -148,12 +156,6 @@ public class NotificationPanelActivity extends AppCompatActivity implements Noti
             displayedNotification = new DisplayedNotification(this, handler, sbn);
         }
 
-        // TODO: properly handle groups
-//        if (sbn.isAppGroup()) {
-            // TODO: find the actual way to hide group headers, this ain't it
-//            notificationView.setVisibility(View.GONE);
-//            Log.w(TAG, "not showing app group notification");
-//        }
 
         notificationSorter.addNotification(displayedNotification, rankingMap);
     }

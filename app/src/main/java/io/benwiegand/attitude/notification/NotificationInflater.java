@@ -176,6 +176,7 @@ public class NotificationInflater {
                 "key = " + sbn.getKey() + "\n"
                         + "grp key = " + sbn.getGroupKey() + "\n"
                         + "o grp key = " + sbn.getOverrideGroupKey() + "\n"
+                        + "is g summary = " + (notif.flags & Notification.FLAG_GROUP_SUMMARY) + "\n"
                         + "id = " + sbn.getId() + "\n"
                         + "tag = " + sbn.getTag() + "\n"
                         + "grp? = " + sbn.isGroup() + "\n"

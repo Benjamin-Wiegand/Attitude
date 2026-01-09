@@ -1,5 +1,6 @@
 package io.benwiegand.attitude.notification;
 
+import android.app.Notification;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
@@ -97,6 +98,18 @@ public class DisplayedNotification {
 
     public String getKey() {
         return statusBarNotification.getKey();
+    }
+
+    public String getGroupKey() {
+        return statusBarNotification.getGroupKey();
+    }
+
+    public boolean isGroupSummary() {
+        return (statusBarNotification.getNotification().flags & Notification.FLAG_GROUP_SUMMARY) != 0;
+    }
+
+    public boolean isGroupMember() {
+        return statusBarNotification.isGroup();
     }
 
     public void expand(boolean animate) {

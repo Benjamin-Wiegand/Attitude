@@ -35,6 +35,7 @@ public class PrefMan {
 
     // notification drawer settings
     public static final String KEY_HIDE_FOREGROUND_META_NOTIFICATIONS = "hide_foreground_meta_notifications";
+    public static final String KEY_HIDE_NOTIFICATION_GROUPS = "hide_notification_groups";
 
     private final Context context;
     private SharedPreferences prefs = null;

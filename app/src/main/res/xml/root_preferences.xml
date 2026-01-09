@@ -108,6 +108,13 @@
             app:defaultValue="true"
             />
 
+        <SwitchPreferenceCompat
+            app:key="hide_notification_groups"
+            app:title="@string/hide_notification_group_summaries"
+            app:summary="@string/hide_notification_group_summaries_summary"
+            app:defaultValue="true"
+            />
+
     </PreferenceCategory>
 
 </PreferenceScreen>
