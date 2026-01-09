@@ -9,7 +9,6 @@ import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 import io.benwiegand.attitude.callback.CallbackRegistrar;
 import io.benwiegand.attitude.callback.NotificationListenerCallback;
@@ -91,6 +90,10 @@ public class MuhNotificationService extends NotificationListenerService implemen
 
         public RankingMap getRankings() {
             return getCurrentRanking();
+        }
+
+        public void clearNotification(String key) {
+            cancelNotification(key);
         }
 
         public void registerCallback(NotificationListenerCallback callback) {

@@ -8,7 +8,7 @@
     android:orientation="vertical"
     >
 
-    <FrameLayout
+    <io.benwiegand.attitude.notification.NotificationFrameView
         android:id="@+id/notification_frame"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

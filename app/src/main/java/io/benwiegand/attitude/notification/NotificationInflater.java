@@ -21,7 +21,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -336,7 +335,6 @@ public class NotificationInflater {
 
     }
 
-
     private void setupExpandContract(DisplayedNotification dNotif, View bigContentView, View contentView) {
 
         findInContentView(contentView, expandButtonId)
@@ -392,11 +390,11 @@ public class NotificationInflater {
         }
     }
 
-    public DisplayedNotification inflate(StatusBarNotification sbn, NotificationListenerService.RankingMap rankingMap) {
+    public DisplayedNotification inflate(StatusBarNotification sbn, NotificationListenerService.RankingMap rankingMap, Runnable clearCallback) {
         InflatingNotification n = new InflatingNotification();
 
         ViewGroup containerView = (ViewGroup) layoutInflater.inflate(R.layout.layout_notification_container, notificationListView, false);
-        FrameLayout notificationFrame = containerView.findViewById(R.id.notification_frame);
+        NotificationFrameView notificationFrame = containerView.findViewById(R.id.notification_frame);
         if (showDebug) inflateDebugText(containerView, sbn, rankingMap);
         inflateContentViews(n, notificationFrame, sbn);
 
@@ -415,6 +413,13 @@ public class NotificationInflater {
         );
 
         setupExpandContract(dNotif, n.bigContentView, n.contentView);
+
+        //TODO: handle FLAG_AUTO_CANCEL
+
+        // TODO: it seems that the "clearable" flag is not indicative of whether a NotificationListenerService can clear a notification.
+        //       the "ongoing" flag seems correct, but I'm unsure if there are other flags.
+        //       I need to investigate this further.
+        notificationFrame.setOnClearListener(clearCallback);
 
         return dNotif;
     }

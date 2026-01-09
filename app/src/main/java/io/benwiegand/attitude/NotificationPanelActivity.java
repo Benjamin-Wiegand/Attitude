@@ -143,7 +143,7 @@ public class NotificationPanelActivity extends AppCompatActivity implements Noti
 
         DisplayedNotification displayedNotification;
         if (!hide) {
-            displayedNotification = notificationInflater.inflate(sbn, rankingMap);
+            displayedNotification = notificationInflater.inflate(sbn, rankingMap, () -> getNotifBinder().ifPresent(b -> b.clearNotification(sbn.getKey())));
         } else {
             displayedNotification = new DisplayedNotification(this, handler, sbn);
         }
