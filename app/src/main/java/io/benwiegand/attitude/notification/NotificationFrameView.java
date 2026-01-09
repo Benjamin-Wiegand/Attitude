@@ -23,7 +23,7 @@ public class NotificationFrameView extends FrameLayout {
     private static final long CLEAR_CANCEL_DELAY = 500;
 
     // velocity of notification required to clear it
-    private static final float CLEAR_VELOCITY_THRESHOLD_MM_S = 20;
+    private static final float CLEAR_VELOCITY_THRESHOLD_MM_S = 60;
 
     // movement must occur by at least this much in a direction before deciding what gesture it is
     private static final int GESTURE_DECISION_THRESHOLD_MM = 1;
