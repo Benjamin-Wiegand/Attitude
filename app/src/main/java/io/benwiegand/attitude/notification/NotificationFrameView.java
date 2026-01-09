@@ -8,6 +8,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
+import android.view.ViewParent;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
@@ -22,7 +23,7 @@ public class NotificationFrameView extends FrameLayout {
     private static final long CLEAR_CANCEL_DELAY = 500;
 
     // velocity of notification required to clear it
-    private static final float CLEAR_VELOCITY_THRESHOLD_MM_S = 10;
+    private static final float CLEAR_VELOCITY_THRESHOLD_MM_S = 20;
 
     // movement must occur by at least this much in a direction before deciding what gesture it is
     private static final int GESTURE_DECISION_THRESHOLD_MM = 1;
@@ -144,10 +145,10 @@ public class NotificationFrameView extends FrameLayout {
                 if (event.getDownTime() != lastDownEventTime) break;    // must be initiated with down event
                 if (gestureDecided && !gestureClear) break;
 
-
                 float deltaX = event.getRawX() - downX;
                 float diffX = Math.abs(deltaX);
 
+                ViewParent parent = getParent();
 
                 if (!gestureDecided) {
                     float diffY = Math.abs(event.getRawY() - downY);
@@ -159,8 +160,13 @@ public class NotificationFrameView extends FrameLayout {
                         Log.d(TAG, "delta x = " + diffX);
                         Log.d(TAG, "delta y = " + diffY);
                         Log.d(TAG, "decided gesture, clear = " + gestureClear);
+
+                        if (parent != null) parent.requestDisallowInterceptTouchEvent(gestureClear);
                     } else {
                         requireNext = true;
+
+                        // don't let the ScrollView start scrolling yet
+                        if (parent != null) parent.requestDisallowInterceptTouchEvent(true);
                     }
                 }
 
