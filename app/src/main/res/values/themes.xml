@@ -6,7 +6,8 @@
     </style>
 
     <style name="Base.Theme.Attitude.NotificationDrawer" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <item name="android:windowBackground">#EBEBEB</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">#E6DCE3E9</item>
     </style>
 
     <style name="Theme.Attitude" parent="Base.Theme.Attitude" />
