@@ -43,7 +43,8 @@ public class QdAdbShell {
                     read -r cmd
                     out="`(eval "$cmd") 2>&1 | base64 -w0`"
                     ret="$?"
-                    printf '|||%s|%s|||' "$ret" "$out"
+                    len="`printf '%s' "$out" | wc -c`"
+                    printf '|||%s|%s|%s|||' "$ret" "$len" "$out"
                 done
             }
             qdshell
@@ -187,15 +188,47 @@ public class QdAdbShell {
         return sb.toString();
     }
 
-    private String readEncodedOutput() throws IOException, TimeoutException {
-        String s = readUntil(QdAdbShell.QD_RESULT_START_END_MARKER, QdAdbShell.INTERNAL_TIMEOUT);
+    private String readString(int totalLength) throws IOException, TimeoutException {
 
-        // result contains marker
-        assert s.endsWith(QdAdbShell.QD_RESULT_START_END_MARKER);
-        return s.substring(0, s.length() - QdAdbShell.QD_RESULT_START_END_MARKER.length());
+        StringBuilder sb = new StringBuilder(totalLength);
+        long deadline = SystemClock.elapsedRealtime() + INTERNAL_TIMEOUT;
+        int len;
+        int remaining = totalLength;
+        bufferIndex = 0;
+
+        while (remaining > 0 && SystemClock.elapsedRealtime() < deadline) {
+            if (!inputStreamReader.ready()) continue;
+
+            len = inputStreamReader.read(buffer, bufferIndex, Math.min(buffer.length - bufferIndex, remaining));
+            if (len < 0) {
+                Log.e(TAG, "end of stream (" + len + ")");
+                throw new IOException("end of stream");
+            } else if (len == 0) {
+                continue;
+            }
+
+            bufferIndex += len;
+            remaining -= len;
+            assert remaining > -1;
+
+            if (bufferIndex >= buffer.length / 2) {
+                sb.append(buffer, 0, bufferIndex);
+                bufferIndex = 0;
+            }
+
+        }
+
+        if (remaining > 0) {
+            Log.e(TAG, "timed out before reading entire string (" + remaining + " of " + totalLength + " bytes left)");
+            throw new TimeoutException("timed out");
+        }
+
+        sb.append(buffer, 0, bufferIndex);
+        bufferIndex = 0;
+        return sb.toString();
     }
 
-    private int readReturnCode() throws IOException, TimeoutException {
+    private int readInt() throws IOException, TimeoutException {
         String s = readUntil(QdAdbShell.QD_RESULT_SEPARATOR, QdAdbShell.INTERNAL_TIMEOUT);
 
         // result contains marker
@@ -275,13 +308,19 @@ public class QdAdbShell {
             // result start marker happens once command exits, use the real timeout here
             assertNext(QD_RESULT_START_END_MARKER, cmdTimeout);
 
-            int returnCode = readReturnCode();
+            int returnCode = readInt();
             Log.d(TAG,  "got return code: " + returnCode);
 
+            int outLen = readInt();
+            Log.d(TAG,  "got out length: " + outLen);
+
             // output is wrapped in base64 to avoid issues with lf vs crlf
-            // also, it can't contain the characters in the end marker
-            String out64 = readEncodedOutput();
+            // the length allows it to buffer a large amount of the output at one time
+            String out64 = readString(outLen);
+
             if (DEBUG_LOGS) Log.d(TAG, "got out (encoded): " + out64);
+            assertNext(QD_RESULT_START_END_MARKER, INTERNAL_TIMEOUT);
+
             byte[] out = Base64.decode(out64, Base64.DEFAULT);
             if (DEBUG_LOGS) Log.d(TAG, "length of out (decoded): " + out.length);
 
